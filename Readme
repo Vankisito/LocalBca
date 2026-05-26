@@ -1,0 +1,60 @@
+# Modulo BCA_Seguros
+Módulo vertical de Hábitat Digital para gestión integral del ciclo de vida de pólizas, cobranza, PCA y comisiones en promotorías de seguros.
+
+Plataforma: Odoo 19 Community
+Estado: Desarrollo activo · Rama develop
+Cliente: Grupo BCA (Promotoría de Promotorías · México)
+
+## ¿Qué es esto?
+Es un producto de software diseñado para resolver un problema muy específico: una promotoría que consolida a otras promotorías necesita administrar centralizadamente el ciclo completo del negocio asegurador — desde el alta de pólizas hasta la liquidación de comisiones a su red — sin que esa carga administrativa la asfixie.
+El módulo automatiza lo que hoy se hace en hojas de cálculo y memoria operativa:
+- Carga masiva del portafolio de pólizas.
+- Conciliación diaria de la cobranza recibida de las aseguradoras (vía archivos CSV).
+- Cálculo y congelamiento de la Prima Computable (PCA) por recibo cobrado.
+- Liquidación de comisiones a tres niveles: la promotoría consolidadora, las promotorías afiliadas y los agentes.
+
+## Cómo está organizado este repositorio
+Carpeta principal
+Readme.md (este archivo)
+Specs/
+    Arquitectura.md (La arquitectura del modulo)
+    Logica de Negocio.md (La logica y necesidades del negocio)
+    Decisiones.md (Las decisiones que fueron tomas y porque y por quien)
+    Changelog.md (Historial de cambios por sesion. Actualizacion obligatoria)
+BCA_Seguros (carpeta con el codigo del modulo)
+
+### Carpeta specs/
+Aquí vive la fuente de verdad del negocio y la arquitectura. Si hay duda sobre cómo debe comportarse algo, la respuesta está aquí — no en este README y no en la cabeza de nadie. Estos archivos son revisados y aprobados con el cliente.
+Contenido típico:
+- Requerimientos de negocio.
+- Especificación de modelos, wizards y flujos.
+- Diccionarios de datos de los archivos de las aseguradoras.
+- Lógica de cálculo de PCA y tablas de factores vigentes.
+- Plan de construcción por etapas.
+ 
+## Cómo abordar el módulo si lo acabas de heredar
+Si eres una persona o un agente IA entrando por primera vez, este es el orden recomendado:
+
+1.- Lee este README hasta el final para tener el panorama.
+2.- Lee specs/ completo, en el orden que el propio specs/ indica. No empieces por el código.
+3.- Lee decisions.md entero. Te ahorra repetir conversaciones que ya tuvimos.
+4.- Lee changelog.md entero para saber dónde quedó la última sesión.
+5.- Recién entonces abre carpeta del modulo/ y mira el código.
+
+Saltarse este orden ha producido errores reales en el pasado: refactors que tiraron decisiones documentadas, código que asumió formatos de archivo que no son los reales, lógicas duplicadas que ya estaban resueltas en otro lado.
+
+## Convenciones de commit
+feat:     Nueva funcionalidad
+fix:      Corrección de bug
+refactor: Cambio interno sin afectar comportamiento
+docs:     Cambios en documentación
+chore:    Tareas de mantenimiento (deps, configs, etc.)
+
+## Base de datos para dev
+Puedes probar el modulo instalandolo en la base de datos [Sandbox_bca1] de [Odoo Sandbox BCA](https://sandbox-odoo.habitatdigital.net/odoo?db=sandbox_bca1)
+
+## Estado del proyecto
+Para conocer el estado actual de la implementación, etapas completadas y siguientes pasos, consultar changelog.md
+Para conocer las decisiones técnicas y de diseño tomadas hasta ahora, consultar Decisiones.md
+Para entender qué hace el módulo en detalle funcional, consultar specs/.
+Este README solo te dice dónde estás parado. El resto vive donde debe vivir.
