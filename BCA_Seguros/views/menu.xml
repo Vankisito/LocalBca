@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         Menú raíz BCA Seguros
+         Reglas (Plan §2.4.2):
+         - groups= obligatorio en el menuitem raíz, o queda invisible
+           en producción y solo se ve en modo debug.
+         - Refs propios siempre con prefijo BCA_Seguros.
+         ============================================================ -->
+    <menuitem id="menu_bca_root"
+              name="BCA Seguros"
+              web_icon="BCA_Seguros,static/description/icon.png"
+              action="BCA_Seguros.action_dashboard"
+              groups="BCA_Seguros.group_bca_agente,BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="50"/>
+
+    <!-- ============================================================
+         Tablero (pantalla de inicio). Es la acción por defecto del
+         menú raíz; además queda como primer submenú para acceso directo.
+         Visible a los 5 roles BCA; los agregados respetan record rules.
+         ============================================================ -->
+    <menuitem id="menu_bca_tablero"
+              name="Tablero"
+              parent="menu_bca_root"
+              action="BCA_Seguros.action_dashboard"
+              sequence="1"/>
+
+    <!-- ============================================================
+         Pólizas (todos los roles BCA) — solo pólizas + carga de cartera.
+         Los Recibos viven ahora bajo Cobranza.
+         ============================================================ -->
+    <menuitem id="menu_bca_polizas"
+              name="Pólizas"
+              parent="menu_bca_root"
+              groups="BCA_Seguros.group_bca_agente,BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="10"/>
+
+    <menuitem id="menu_bca_polizas_lista"
+              name="Pólizas"
+              parent="menu_bca_polizas"
+              action="BCA_Seguros.action_poliza"
+              sequence="10"/>
+
+    <menuitem id="menu_bca_cargar_portafolio"
+              name="Cargar Portafolio"
+              parent="menu_bca_polizas"
+              action="BCA_Seguros.action_wizard_carga_portafolio"
+              groups="BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="20"/>
+
+    <!-- ============================================================
+         Cobranza — el padre se abre también al Agente para que conserve
+         acceso a SUS recibos (filtrados por record rule). Importar Cobranza
+         y Bitácoras quedan restringidos a Operador+ con groups EXPLÍCITO
+         (sin ellos, al incluir agente en el padre, el agente los vería).
+         ============================================================ -->
+    <menuitem id="menu_bca_cobranza"
+              name="Cobranza"
+              parent="menu_bca_root"
+              groups="BCA_Seguros.group_bca_agente,BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="20"/>
+
+    <menuitem id="menu_bca_recibos"
+              name="Recibos"
+              parent="menu_bca_cobranza"
+              action="BCA_Seguros.action_recibo"
+              groups="BCA_Seguros.group_bca_agente,BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="10"/>
+
+    <menuitem id="menu_bca_importar_cobranza"
+              name="Importar Cobranza"
+              parent="menu_bca_cobranza"
+              action="BCA_Seguros.action_wizard_cobranza_diaria"
+              groups="BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="20"/>
+
+    <menuitem id="menu_bca_bitacoras"
+              name="Bitácoras de Importación"
+              parent="menu_bca_cobranza"
+              action="BCA_Seguros.action_bitacora"
+              groups="BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="30"/>
+
+    <!-- ============================================================
+         Reportes (Líder+) — SICs de la Etapa 9.
+         Consolidado BCA restringido a Director Comercial+ (espeja la ACL).
+         ============================================================ -->
+    <menuitem id="menu_bca_reportes"
+              name="Reportes"
+              parent="menu_bca_root"
+              groups="BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="30"/>
+
+    <menuitem id="menu_bca_reporte_pca_agente"
+              name="PCA por Agente"
+              parent="menu_bca_reportes"
+              action="BCA_Seguros.action_reporte_pca_agente"
+              sequence="10"/>
+
+    <menuitem id="menu_bca_reporte_pca_promotoria"
+              name="PCA por Promotoría"
+              parent="menu_bca_reportes"
+              action="BCA_Seguros.action_reporte_pca_promotoria"
+              sequence="20"/>
+
+    <menuitem id="menu_bca_reporte_pca_consolidado"
+              name="Consolidado BCA"
+              parent="menu_bca_reportes"
+              action="BCA_Seguros.action_reporte_pca_consolidado"
+              groups="BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="30"/>
+
+    <menuitem id="menu_bca_reporte_estado_cartera"
+              name="Estado de Cartera"
+              parent="menu_bca_reportes"
+              action="BCA_Seguros.action_reporte_estado_cartera"
+              sequence="40"/>
+
+    <!-- SIC de Reclutamiento (Etapa 12): pivote de postulantes. -->
+    <menuitem id="menu_bca_sic_reclutamiento"
+              name="SIC Reclutamiento"
+              parent="menu_bca_reportes"
+              action="BCA_Seguros.action_sic_reclutamiento"
+              sequence="50"/>
+
+    <!-- ============================================================
+         Configuración (Director Comercial+) — sin cambios.
+         ============================================================ -->
+    <menuitem id="menu_bca_configuracion"
+              name="Configuración"
+              parent="menu_bca_root"
+              groups="BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+              sequence="100"/>
+
+    <menuitem id="menu_bca_config_aseguradoras"
+              name="Aseguradoras"
+              parent="menu_bca_configuracion"
+              action="BCA_Seguros.action_partner_aseguradoras"
+              sequence="10"/>
+
+    <menuitem id="menu_bca_config_promotorias"
+              name="Promotorías"
+              parent="menu_bca_configuracion"
+              action="BCA_Seguros.action_partner_promotorias"
+              sequence="20"/>
+
+    <menuitem id="menu_bca_config_agentes"
+              name="Agentes"
+              parent="menu_bca_configuracion"
+              action="BCA_Seguros.action_partner_agentes"
+              sequence="30"/>
+
+    <menuitem id="menu_bca_config_productos"
+              name="Productos de Seguro"
+              parent="menu_bca_configuracion"
+              action="BCA_Seguros.action_product_bca"
+              sequence="40"/>
+
+    <menuitem id="menu_bca_config_conductos"
+              name="Conductos de Pago"
+              parent="menu_bca_configuracion"
+              action="BCA_Seguros.action_conducto"
+              sequence="50"/>
+
+    <menuitem id="menu_bca_config_factores"
+              name="Factores PCA"
+              parent="menu_bca_configuracion"
+              action="BCA_Seguros.action_factor_pca"
+              sequence="60"/>
+
+    <!-- Reclutamiento (Etapa 12): catálogo de sedes / plazas. -->
+    <menuitem id="menu_bca_config_sedes"
+              name="Sedes / Plazas"
+              parent="menu_bca_configuracion"
+              action="BCA_Seguros.action_bca_sede"
+              sequence="70"/>
+
+</odoo>

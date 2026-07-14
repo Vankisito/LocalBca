@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Conductos de pago MetLife — 4 registros reales.
+
+         codigo_archivo: cadena exacta que aparece en los CSV de cobranza
+         MetLife (LSP/GCAYE). Si el archivo trae variantes (mayúsculas,
+         espacios, abreviaturas), ajustar aquí o crear conductos adicionales
+         desde UI (editable por Operador y superiores — ver ACL).
+
+         TODO antes de Etapa 6: confirmar contra un CSV real de MetLife
+         que los códigos coinciden exactamente. Si MetLife usa abreviaturas
+         en la columna conducto del CSV, actualizar codigo_archivo. -->
+    <data noupdate="1">
+
+        <record id="conducto_metlife_agente_directo" model="bca.conducto">
+            <field name="name">Agente Directo</field>
+            <field name="codigo_archivo">AGENTE_DIRECTO</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+        </record>
+
+        <record id="conducto_metlife_cargo_automatico" model="bca.conducto">
+            <field name="name">Cargo Automático</field>
+            <field name="codigo_archivo">CARGO_AUTOMATICO</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+        </record>
+
+        <record id="conducto_metlife_tarjeta_credito" model="bca.conducto">
+            <field name="name">Tarjeta de Crédito</field>
+            <field name="codigo_archivo">TARJETA_CREDITO</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+        </record>
+
+        <record id="conducto_metlife_tarjeta_debito" model="bca.conducto">
+            <field name="name">Tarjeta de Débito</field>
+            <field name="codigo_archivo">TARJETA_DEBITO</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+        </record>
+
+    </data>
+</odoo>

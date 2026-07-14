@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_crm_lead_form_bca" model="ir.ui.view">
+        <field name="name">crm.lead.form.bca</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header" position="inside">
+                <button name="action_bca_generar_poliza"
+                        type="object"
+                        string="Generar Póliza"
+                        class="oe_highlight"
+                        confirm="Vas a crear una nueva póliza con los datos del lead. ¿Continuar?"
+                        invisible="not stage_id or bca_poliza_generada_id"/>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page name="bca_seguro" string="Datos de Seguro">
+                    <group>
+                        <group name="bca_seguro_producto" string="Producto">
+                            <field name="bca_aseguradora_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="bca_producto_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="bca_ramo"/>
+                        </group>
+                        <group name="bca_seguro_prima" string="Prima">
+                            <field name="bca_prima_estimada"/>
+                            <field name="bca_periodicidad"/>
+                            <field name="bca_poliza_generada_id"
+                                   readonly="1"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

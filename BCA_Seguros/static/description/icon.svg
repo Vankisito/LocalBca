@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bcaShield" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2E86DE"/>
+      <stop offset="1" stop-color="#1E63B8"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="#FFFFFF"/>
+  <g transform="translate(-176.64 -215.51) scale(1.69)">
+    <path d="M146,178 Q146,150 174,150 H338 Q366,150 366,178 V300 C366,360 311,392 256,408 C201,392 146,360 146,300 Z"
+          fill="url(#bcaShield)"/>
+    <path d="M200,270 L240,312 L320,222" fill="none" stroke="#0F9D7E" stroke-width="36"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

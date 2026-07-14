@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         Etapa 9 — Reportes SQL (SICs)
+         Vistas pivot (default) / graph / list + search por cada uno de los
+         4 modelos _auto=False. Las dimensiones agente/promotoría salen de la
+         FOTO INMUTABLE del recibo (C2 / R-PCA-01); ver reports/*.py.
+         Sintaxis v19: <list> (no <tree>), <group> SIN atributos en <search>.
+         ================================================================ -->
+
+    <!-- ============================================================
+         SIC 1 — PCA por Agente
+         ============================================================ -->
+    <record id="view_reporte_pca_agente_pivot" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.agente.pivot</field>
+        <field name="model">bca.reporte.pca.agente</field>
+        <field name="arch" type="xml">
+            <pivot string="PCA por Agente">
+                <field name="agente_id" type="row"/>
+                <field name="ramo" type="col"/>
+                <field name="pca" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_agente_graph" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.agente.graph</field>
+        <field name="model">bca.reporte.pca.agente</field>
+        <field name="arch" type="xml">
+            <graph string="PCA por Agente" type="bar">
+                <field name="agente_id"/>
+                <field name="pca" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_agente_list" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.agente.list</field>
+        <field name="model">bca.reporte.pca.agente</field>
+        <field name="arch" type="xml">
+            <list string="PCA por Agente">
+                <field name="fecha_pago"/>
+                <field name="agente_id"/>
+                <field name="promotoria_id"/>
+                <field name="aseguradora_id"/>
+                <field name="ramo"/>
+                <field name="producto_id" optional="hide"/>
+                <field name="factor" optional="hide"/>
+                <field name="pca" sum="Total PCA"/>
+                <field name="pca_currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_agente_search" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.agente.search</field>
+        <field name="model">bca.reporte.pca.agente</field>
+        <field name="arch" type="xml">
+            <search string="PCA por Agente">
+                <field name="agente_id"/>
+                <field name="promotoria_id"/>
+                <field name="aseguradora_id"/>
+                <filter name="filter_vida" string="Vida" domain="[('ramo', '=', 'vida')]"/>
+                <filter name="filter_gmm" string="GMM" domain="[('ramo', '=', 'gmm')]"/>
+                <separator/>
+                <filter name="filter_fecha_pago" string="Fecha de Pago"
+                        date="fecha_pago"/>
+                <group>
+                    <filter name="group_agente" string="Agente"
+                            context="{'group_by': 'agente_id'}"/>
+                    <filter name="group_promotoria" string="Promotoría"
+                            context="{'group_by': 'promotoria_id'}"/>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'ramo'}"/>
+                    <filter name="group_producto" string="Producto"
+                            context="{'group_by': 'producto_id'}"/>
+                    <filter name="group_fecha" string="Fecha de Pago"
+                            context="{'group_by': 'fecha_pago:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_reporte_pca_agente" model="ir.actions.act_window">
+        <field name="name">PCA por Agente</field>
+        <field name="res_model">bca.reporte.pca.agente</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_group_agente': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin PCA registrada todavía</p>
+            <p>La PCA aparece aquí cuando se registran pagos de recibos de
+               agentes con Clave Definitiva.</p>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         SIC 2 — PCA por Promotoría
+         ============================================================ -->
+    <record id="view_reporte_pca_promotoria_pivot" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.promotoria.pivot</field>
+        <field name="model">bca.reporte.pca.promotoria</field>
+        <field name="arch" type="xml">
+            <pivot string="PCA por Promotoría">
+                <field name="promotoria_id" type="row"/>
+                <field name="ramo" type="col"/>
+                <field name="pca" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_promotoria_graph" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.promotoria.graph</field>
+        <field name="model">bca.reporte.pca.promotoria</field>
+        <field name="arch" type="xml">
+            <graph string="PCA por Promotoría" type="bar">
+                <field name="promotoria_id"/>
+                <field name="pca" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_promotoria_list" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.promotoria.list</field>
+        <field name="model">bca.reporte.pca.promotoria</field>
+        <field name="arch" type="xml">
+            <list string="PCA por Promotoría">
+                <field name="promotoria_id"/>
+                <field name="aseguradora_id"/>
+                <field name="ramo"/>
+                <field name="recibo_count" sum="Total Recibos"/>
+                <field name="pca" sum="Total PCA"/>
+                <field name="pca_currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_promotoria_search" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.promotoria.search</field>
+        <field name="model">bca.reporte.pca.promotoria</field>
+        <field name="arch" type="xml">
+            <search string="PCA por Promotoría">
+                <field name="promotoria_id"/>
+                <field name="aseguradora_id"/>
+                <filter name="filter_vida" string="Vida" domain="[('ramo', '=', 'vida')]"/>
+                <filter name="filter_gmm" string="GMM" domain="[('ramo', '=', 'gmm')]"/>
+                <group>
+                    <filter name="group_promotoria" string="Promotoría"
+                            context="{'group_by': 'promotoria_id'}"/>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'ramo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_reporte_pca_promotoria" model="ir.actions.act_window">
+        <field name="name">PCA por Promotoría</field>
+        <field name="res_model">bca.reporte.pca.promotoria</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_group_promotoria': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin PCA registrada todavía</p>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         SIC 3 — PCA Consolidado BCA (drill-down promotoría→agente→ramo)
+         ============================================================ -->
+    <record id="view_reporte_pca_consolidado_pivot" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.consolidado.pivot</field>
+        <field name="model">bca.reporte.pca.consolidado</field>
+        <field name="arch" type="xml">
+            <pivot string="PCA Consolidado BCA">
+                <field name="promotoria_id" type="row"/>
+                <field name="aseguradora_id" type="col"/>
+                <field name="pca" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_consolidado_graph" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.consolidado.graph</field>
+        <field name="model">bca.reporte.pca.consolidado</field>
+        <field name="arch" type="xml">
+            <graph string="PCA Consolidado BCA" type="bar" stacked="True">
+                <field name="promotoria_id"/>
+                <field name="ramo"/>
+                <field name="pca" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_consolidado_list" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.consolidado.list</field>
+        <field name="model">bca.reporte.pca.consolidado</field>
+        <field name="arch" type="xml">
+            <list string="PCA Consolidado BCA">
+                <field name="fecha_pago"/>
+                <field name="promotoria_id"/>
+                <field name="agente_id"/>
+                <field name="aseguradora_id"/>
+                <field name="ramo"/>
+                <field name="pca" sum="Total PCA"/>
+                <field name="pca_currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_reporte_pca_consolidado_search" model="ir.ui.view">
+        <field name="name">bca.reporte.pca.consolidado.search</field>
+        <field name="model">bca.reporte.pca.consolidado</field>
+        <field name="arch" type="xml">
+            <search string="PCA Consolidado BCA">
+                <field name="promotoria_id"/>
+                <field name="agente_id"/>
+                <field name="aseguradora_id"/>
+                <filter name="filter_vida" string="Vida" domain="[('ramo', '=', 'vida')]"/>
+                <filter name="filter_gmm" string="GMM" domain="[('ramo', '=', 'gmm')]"/>
+                <separator/>
+                <filter name="filter_fecha_pago" string="Fecha de Pago"
+                        date="fecha_pago"/>
+                <group>
+                    <filter name="group_promotoria" string="Promotoría"
+                            context="{'group_by': 'promotoria_id'}"/>
+                    <filter name="group_agente" string="Agente"
+                            context="{'group_by': 'agente_id'}"/>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'ramo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_reporte_pca_consolidado" model="ir.actions.act_window">
+        <field name="name">PCA Consolidado BCA</field>
+        <field name="res_model">bca.reporte.pca.consolidado</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_group_promotoria': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin PCA registrada todavía</p>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         SIC 4 — Estado de Cartera
+         ============================================================ -->
+    <record id="view_reporte_estado_cartera_pivot" model="ir.ui.view">
+        <field name="name">bca.reporte.estado.cartera.pivot</field>
+        <field name="model">bca.reporte.estado.cartera</field>
+        <field name="arch" type="xml">
+            <pivot string="Estado de Cartera">
+                <field name="promotoria_id" type="row"/>
+                <field name="estado_cartera" type="col"/>
+                <field name="poliza_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_reporte_estado_cartera_graph" model="ir.ui.view">
+        <field name="name">bca.reporte.estado.cartera.graph</field>
+        <field name="model">bca.reporte.estado.cartera</field>
+        <field name="arch" type="xml">
+            <graph string="Estado de Cartera" type="bar" stacked="True">
+                <field name="promotoria_id"/>
+                <field name="estado_cartera"/>
+                <field name="poliza_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_reporte_estado_cartera_list" model="ir.ui.view">
+        <field name="name">bca.reporte.estado.cartera.list</field>
+        <field name="model">bca.reporte.estado.cartera</field>
+        <field name="arch" type="xml">
+            <list string="Estado de Cartera"
+                  decoration-success="estado_cartera == 'vigente'"
+                  decoration-warning="estado_cartera == 'en_riesgo'"
+                  decoration-danger="estado_cartera == 'caida'">
+                <field name="poliza_id"/>
+                <field name="agente_id"/>
+                <field name="promotoria_id"/>
+                <field name="aseguradora_id"/>
+                <field name="ramo"/>
+                <field name="pagado_hasta"/>
+                <field name="estado_cartera" widget="badge"/>
+                <field name="prima_anual" sum="Total Prima Anual" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_reporte_estado_cartera_search" model="ir.ui.view">
+        <field name="name">bca.reporte.estado.cartera.search</field>
+        <field name="model">bca.reporte.estado.cartera</field>
+        <field name="arch" type="xml">
+            <search string="Estado de Cartera">
+                <field name="poliza_id"/>
+                <field name="agente_id"/>
+                <field name="promotoria_id"/>
+                <field name="aseguradora_id"/>
+                <filter name="filter_vigente" string="Vigente"
+                        domain="[('estado_cartera', '=', 'vigente')]"/>
+                <filter name="filter_en_riesgo" string="En Riesgo"
+                        domain="[('estado_cartera', '=', 'en_riesgo')]"/>
+                <filter name="filter_caida" string="Caída"
+                        domain="[('estado_cartera', '=', 'caida')]"/>
+                <group>
+                    <filter name="group_estado_cartera" string="Estado de Cartera"
+                            context="{'group_by': 'estado_cartera'}"/>
+                    <filter name="group_agente" string="Agente"
+                            context="{'group_by': 'agente_id'}"/>
+                    <filter name="group_promotoria" string="Promotoría"
+                            context="{'group_by': 'promotoria_id'}"/>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'ramo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_reporte_estado_cartera" model="ir.actions.act_window">
+        <field name="name">Estado de Cartera</field>
+        <field name="res_model">bca.reporte.estado.cartera</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_group_estado_cartera': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin pólizas activas</p>
+            <p>Las pólizas activas se clasifican en Vigente / En Riesgo / Caída
+               según su fecha "Pagado Hasta".</p>
+        </field>
+    </record>
+
+</odoo>

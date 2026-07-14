@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_bitacora_importacion_list" model="ir.ui.view">
+        <field name="name">bca.bitacora.importacion.list</field>
+        <field name="model">bca.bitacora.importacion</field>
+        <field name="arch" type="xml">
+            <list string="Bitácoras de Importación"
+                  decoration-danger="errores_procesamiento &gt; 0"
+                  decoration-warning="polizas_no_encontradas &gt; 0"
+                  default_order="fecha_ejecucion desc">
+                <field name="name"/>
+                <field name="fecha_ejecucion"/>
+                <field name="usuario_id"/>
+                <field name="aseguradora_id"/>
+                <field name="ramo"/>
+                <field name="nombre_archivo" optional="hide"/>
+                <field name="total_filas"/>
+                <field name="recibos_aplicados" sum="Total Aplicados"/>
+                <field name="anulaciones_ignoradas" optional="hide"/>
+                <field name="polizas_no_encontradas"/>
+                <field name="errores_procesamiento"/>
+                <field name="pca_total_sesion" widget="monetary"
+                       sum="PCA Sesión"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bitacora_importacion_form" model="ir.ui.view">
+        <field name="name">bca.bitacora.importacion.form</field>
+        <field name="model">bca.bitacora.importacion</field>
+        <field name="arch" type="xml">
+            <form string="Bitácora de Importación" create="false" edit="false">
+                <sheet>
+                    <widget name="web_ribbon" title="Inmutable"
+                            bg_color="bg-info"/>
+                    <div class="oe_title">
+                        <label for="name" string="Folio"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Ejecución">
+                            <field name="usuario_id" readonly="1"/>
+                            <field name="fecha_ejecucion" readonly="1"/>
+                            <field name="aseguradora_id" readonly="1"/>
+                            <field name="ramo" readonly="1"/>
+                            <field name="nombre_archivo" readonly="1"/>
+                            <field name="archivo_adjunto"
+                                   filename="nombre_archivo"
+                                   readonly="1"/>
+                        </group>
+                        <group string="Totales">
+                            <field name="total_filas" readonly="1"/>
+                            <field name="recibos_aplicados" readonly="1"/>
+                            <field name="anulaciones_ignoradas" readonly="1"/>
+                            <field name="polizas_no_encontradas" readonly="1"/>
+                            <field name="errores_procesamiento" readonly="1"/>
+                            <field name="currency_id" readonly="1"/>
+                            <field name="pca_total_sesion" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="lineas" string="Líneas">
+                            <field name="linea_ids" readonly="1">
+                                <list decoration-success="marca == 'aplicado'"
+                                      decoration-danger="marca == 'error'"
+                                      decoration-warning="marca in ('no_encontrada', 'sin_recibo', 'advertencia')"
+                                      decoration-muted="marca == 'anulado'">
+                                    <field name="numero_fila"/>
+                                    <field name="numero_poliza_raw"/>
+                                    <field name="marca" widget="badge"/>
+                                    <field name="mensaje"/>
+                                    <field name="recibo_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_bitacora_importacion_search" model="ir.ui.view">
+        <field name="name">bca.bitacora.importacion.search</field>
+        <field name="model">bca.bitacora.importacion</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Bitácoras">
+                <field name="name"/>
+                <field name="usuario_id"/>
+                <field name="aseguradora_id"/>
+                <field name="nombre_archivo"/>
+                <separator/>
+                <filter name="filter_con_errores" string="Con errores"
+                        domain="[('errores_procesamiento', '>', 0)]"/>
+                <filter name="filter_polizas_no_encontradas"
+                        string="Con pólizas no encontradas"
+                        domain="[('polizas_no_encontradas', '>', 0)]"/>
+                <group>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'ramo'}"/>
+                    <filter name="group_usuario" string="Usuario"
+                            context="{'group_by': 'usuario_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_bitacora" model="ir.actions.act_window">
+        <field name="name">Bitácoras de Importación</field>
+        <field name="res_model">bca.bitacora.importacion</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="BCA_Seguros.view_bitacora_importacion_search"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_conducto_list" model="ir.ui.view">
+        <field name="name">bca.conducto.list</field>
+        <field name="model">bca.conducto</field>
+        <field name="arch" type="xml">
+            <list string="Conductos de Pago">
+                <field name="name"/>
+                <field name="aseguradora_id"/>
+                <field name="codigo_archivo"/>
+                <field name="activo" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_conducto_form" model="ir.ui.view">
+        <field name="name">bca.conducto.form</field>
+        <field name="model">bca.conducto</field>
+        <field name="arch" type="xml">
+            <form string="Conducto de Pago">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del conducto"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="aseguradora_id"
+                                   options="{'no_create': True}"/>
+                            <field name="codigo_archivo"/>
+                        </group>
+                        <group>
+                            <field name="activo" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_conducto_search" model="ir.ui.view">
+        <field name="name">bca.conducto.search</field>
+        <field name="model">bca.conducto</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Conductos">
+                <field name="name"/>
+                <field name="codigo_archivo"/>
+                <field name="aseguradora_id"/>
+                <separator/>
+                <filter name="filter_activos" string="Activos"
+                        domain="[('activo', '=', True)]"/>
+                <filter name="filter_inactivos" string="Inactivos"
+                        domain="[('activo', '=', False)]"/>
+                <group>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_conducto" model="ir.actions.act_window">
+        <field name="name">Conductos de Pago</field>
+        <field name="res_model">bca.conducto</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="BCA_Seguros.view_conducto_search"/>
+        <field name="context">{'search_default_filter_activos': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registrá un nuevo conducto de pago
+            </p>
+            <p>
+                Los conductos definen el medio por el cual se cobra una prima
+                (Agente Directo, Cargo Automático, Tarjeta de Crédito, etc.).
+                El <strong>código en archivo</strong> debe coincidir exactamente
+                con el valor que aparece en los CSV de la aseguradora.
+            </p>
+        </field>
+    </record>
+
+</odoo>

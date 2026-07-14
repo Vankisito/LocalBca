@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_factor_pca_list" model="ir.ui.view">
+        <field name="name">bca.factor.pca.list</field>
+        <field name="model">bca.factor.pca</field>
+        <field name="arch" type="xml">
+            <list string="Factores PCA"
+                  decoration-muted="not activo"
+                  decoration-success="activo and not vigencia_hasta">
+                <field name="name"/>
+                <field name="aseguradora_id"/>
+                <field name="ramo"/>
+                <field name="currency_id"/>
+                <field name="factor" digits="[6,4]"/>
+                <field name="vigencia_desde"/>
+                <field name="vigencia_hasta"/>
+                <field name="activo" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_factor_pca_form" model="ir.ui.view">
+        <field name="name">bca.factor.pca.form</field>
+        <field name="model">bca.factor.pca</field>
+        <field name="arch" type="xml">
+            <form string="Factor PCA">
+                <sheet>
+                    <widget name="web_ribbon" title="Inactivo"
+                            bg_color="bg-secondary"
+                            invisible="activo"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre descriptivo del factor"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Aplicación">
+                            <field name="aseguradora_id"
+                                   options="{'no_create': True}"/>
+                            <field name="ramo"/>
+                            <field name="currency_id"
+                                   options="{'no_create': True}"/>
+                            <field name="producto_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Vigencia">
+                            <field name="vigencia_desde"/>
+                            <field name="vigencia_hasta"
+                                   placeholder="Sin fecha de cierre"/>
+                            <field name="activo" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <group string="GMM" invisible="ramo != 'gmm'">
+                        <group>
+                            <field name="coaseguro_min"/>
+                            <field name="coaseguro_max"/>
+                        </group>
+                        <group>
+                            <field name="deducible_min"/>
+                        </group>
+                    </group>
+                    <group string="Factor aplicable">
+                        <!-- Edición restringida vía ACL (ir.model.access): solo
+                             Director y Director Comercial tienen perm_write
+                             sobre bca.factor.pca. Operador/Líder ven el campo
+                             pero el save falla con AccessError si lo intentan. -->
+                        <field name="factor" digits="[6,4]"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_factor_pca_search" model="ir.ui.view">
+        <field name="name">bca.factor.pca.search</field>
+        <field name="model">bca.factor.pca</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Factores PCA">
+                <field name="name"/>
+                <field name="aseguradora_id"/>
+                <field name="producto_ids"/>
+                <separator/>
+                <filter name="filter_activos" string="Activos"
+                        domain="[('activo', '=', True)]"/>
+                <filter name="filter_vigentes" string="Vigentes hoy"
+                        domain="['&amp;',
+                                 ('vigencia_desde', '&lt;=', context_today().strftime('%Y-%m-%d')),
+                                 '|',
+                                 ('vigencia_hasta', '=', False),
+                                 ('vigencia_hasta', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="filter_vida" string="Vida"
+                        domain="[('ramo', '=', 'vida')]"/>
+                <filter name="filter_gmm" string="GMM"
+                        domain="[('ramo', '=', 'gmm')]"/>
+                <group>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'ramo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_factor_pca" model="ir.actions.act_window">
+        <field name="name">Factores PCA</field>
+        <field name="res_model">bca.factor.pca</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="BCA_Seguros.view_factor_pca_search"/>
+        <field name="context">{'search_default_filter_activos': 1, 'search_default_filter_vigentes': 1}</field>
+    </record>
+
+</odoo>

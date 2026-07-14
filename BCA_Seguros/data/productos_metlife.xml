@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Productos MetLife — 11 Vida + 2 GMM = 13 productos.
+
+         Los 7 productos Vida con factor preexistente (Universales, TempoLife,
+         TempoLife GP/RP, TotalLife, EducaLife, PerfectLife, Horizonte) están
+         referenciados desde data/factores_metlife_2026.xml vía producto_ids.
+
+         Los 4 productos Vida nuevos (Perfect Life, Vida Pagos, Metalife Retiro,
+         Metalife tu Futuro) hoy no tienen factor asignado. Cuando se publique
+         la tabla 2026 oficial con sus factores, se actualizarán los registros
+         de bca.factor.pca sin tocar este archivo.
+
+         Los 2 GMM (MedicaLife, Primordial) no requieren factor propio: los
+         3 factores GMM existentes discriminan por coaseguro/deducible
+         (Arquitectura §5.2).
+
+         TODO antes de producción:
+         - bca_temporalidad_anios: hoy 0 (vitalicio). Verificar valor real
+           con catálogo MetLife para productos temporales (afecta exclusión
+           PCA por temporalidad < 10 años).
+         - bca_es_capitalizable: hoy False. Verificar productos de ahorro
+           (Universales, EducaLife, Metalife Retiro, Metalife tu Futuro)
+           — afecta exclusión PCA por aportación adicional.
+         - bca_nombre_archivo_aseguradora: vacío. Llenar con la cadena
+           exacta que aparezca en los CSV LSP/GCAYE antes de Etapa 6. -->
+    <data noupdate="1">
+
+        <!-- ============================================================
+             VIDA — 11 productos (7 con factor + 4 nuevos)
+             ============================================================ -->
+
+        <!-- Productos con factor preexistente -->
+
+        <record id="producto_metlife_universales" model="product.template">
+            <field name="name">MetLife Universales</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_tempolife" model="product.template">
+            <field name="name">MetLife TempoLife</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_tempolife_gprp" model="product.template">
+            <field name="name">MetLife TempoLife GP/RP</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_totallife" model="product.template">
+            <field name="name">MetLife TotalLife</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_edutalife" model="product.template">
+            <field name="name">MetLife EducaLife</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_perfectlife" model="product.template">
+            <field name="name">MetLife PerfectLife</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_horizonte" model="product.template">
+            <field name="name">MetLife Horizonte</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <!-- Productos nuevos sin factor asignado todavía -->
+
+        <record id="producto_metlife_perfect_life" model="product.template">
+            <field name="name">MetLife Perfect Life</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_vida_pagos" model="product.template">
+            <field name="name">MetLife Vida Pagos</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_metalife_retiro" model="product.template">
+            <field name="name">MetLife Metalife Retiro</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <record id="producto_metlife_metalife_tu_futuro" model="product.template">
+            <field name="name">MetLife Metalife tu Futuro</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_vida"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">vida</field>
+            <field name="bca_temporalidad_anios">0</field>
+            <field name="bca_es_capitalizable" eval="False"/>
+        </record>
+
+        <!-- ============================================================
+             GMM — 2 productos
+             Factor PCA se resuelve por coaseguro/deducible, no por producto.
+             ============================================================ -->
+
+        <record id="producto_metlife_gmm_medicalife" model="product.template">
+            <field name="name">MetLife MedicaLife</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_gmm"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">gmm</field>
+        </record>
+
+        <record id="producto_metlife_gmm_primordial" model="product.template">
+            <field name="name">MetLife Primordial</field>
+            <field name="type">service</field>
+            <field name="categ_id" ref="BCA_Seguros.product_cat_metlife_gmm"/>
+            <field name="bca_es_producto_seguro" eval="True"/>
+            <field name="bca_aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="bca_ramo">gmm</field>
+        </record>
+
+    </data>
+</odoo>

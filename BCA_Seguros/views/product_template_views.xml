@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_product_template_form_bca" model="ir.ui.view">
+        <field name="name">product.template.form.bca</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//notebook" position="inside">
+                <page name="bca_seguros" string="BCA Seguros">
+                    <group>
+                        <field name="bca_es_producto_seguro" widget="boolean_toggle"/>
+                    </group>
+                    <group invisible="not bca_es_producto_seguro">
+                        <group string="Aseguradora y ramo">
+                            <field name="bca_aseguradora_id"
+                                   options="{'no_create': True}"
+                                   required="bca_es_producto_seguro"/>
+                            <field name="bca_ramo"
+                                   required="bca_es_producto_seguro"/>
+                            <field name="bca_nombre_archivo_aseguradora"/>
+                        </group>
+                        <group string="Atributos Vida"
+                               invisible="bca_ramo != 'vida'">
+                            <field name="bca_temporalidad_anios"/>
+                            <field name="bca_es_capitalizable" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <!-- Coberturas que ofrece el producto: se modelan con el
+                         sistema nativo de atributos (no_variant). Cada línea es
+                         un atributo agrupador (Cobertura Básica / Coberturas
+                         Adicionales) con su conjunto de valores. La póliza elige
+                         de aquí vía dominio por producto. -->
+                    <separator string="Coberturas ofrecidas"
+                               invisible="not bca_es_producto_seguro"/>
+                    <field name="attribute_line_ids" nolabel="1"
+                           invisible="not bca_es_producto_seguro"
+                           context="{'default_product_tmpl_id': id}">
+                        <list editable="bottom">
+                            <field name="attribute_id"
+                                   options="{'no_create': True}"/>
+                            <field name="value_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Lista focalizada de productos de seguro: muestra aseguradora y ramo
+         (la lista genérica de producto trae precio/stock, irrelevantes aquí). -->
+    <record id="view_product_template_list_bca" model="ir.ui.view">
+        <field name="name">product.template.list.bca</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <list string="Productos de Seguro">
+                <field name="name"/>
+                <field name="bca_aseguradora_id"/>
+                <field name="bca_ramo"/>
+                <field name="bca_nombre_archivo_aseguradora" optional="hide"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_product_template_search_bca" model="ir.ui.view">
+        <field name="name">product.template.search.bca</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Productos de Seguro">
+                <field name="name"/>
+                <field name="bca_aseguradora_id"/>
+                <field name="bca_nombre_archivo_aseguradora"/>
+                <separator/>
+                <filter name="filter_vida" string="Vida"
+                        domain="[('bca_ramo', '=', 'vida')]"/>
+                <filter name="filter_gmm" string="GMM"
+                        domain="[('bca_ramo', '=', 'gmm')]"/>
+                <group>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'bca_aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'bca_ramo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_product_bca" model="ir.actions.act_window">
+        <field name="name">Productos de Seguro</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="BCA_Seguros.view_product_template_list_bca"/>
+        <field name="search_view_id" ref="BCA_Seguros.view_product_template_search_bca"/>
+        <field name="domain">[('bca_es_producto_seguro', '=', True)]</field>
+        <field name="context">{'default_bca_es_producto_seguro': True}</field>
+    </record>
+
+</odoo>

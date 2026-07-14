@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hr_applicant_form_bca" model="ir.ui.view">
+        <field name="name">hr.applicant.form.bca</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Promotoría destino + Sede/Plaza en el cuerpo del formulario. -->
+            <xpath expr="//field[@name='job_id']" position="after">
+                <field name="bca_promotoria_destino_id"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="bca_sede_id"
+                       options="{'no_create': True, 'no_open': True}"/>
+            </xpath>
+
+            <!-- Folio CV bajo el perfil de LinkedIn nativo. -->
+            <xpath expr="//field[@name='linkedin_profile']" position="after">
+                <field name="bca_folio_cv"/>
+            </xpath>
+
+            <!-- El botón nativo "Create Employee" solo se muestra cuando el agente
+                 llega a la etapa "Clave Definitiva" (se conserva el criterio nativo
+                 employee_id/active/date_closed). -->
+            <xpath expr="//button[@name='create_employee_from_applicant']" position="before">
+                <field name="bca_puede_crear_empleado" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='create_employee_from_applicant']" position="attributes">
+                <attribute name="invisible">employee_id or not active or not date_closed or not bca_puede_crear_empleado</attribute>
+            </xpath>
+
+            <!-- Institución Educativa bajo el Grado nativo (type_id) en Detalles. -->
+            <xpath expr="//field[@name='type_id']" position="after">
+                <field name="bca_institucion"/>
+            </xpath>
+
+            <!-- Relabel de la sección salarial nativa ("Salary Package"). -->
+            <xpath expr="//label[@for='salary_expected']" position="attributes">
+                <attribute name="string">Expectativa económica</attribute>
+            </xpath>
+            <xpath expr="//label[@for='salary_proposed']" position="attributes">
+                <attribute name="string">Propuesta económica</attribute>
+            </xpath>
+
+            <!-- Perfil BCA dentro de la pestaña nativa "Detalles" (D-19):
+                 el grado académico ya es nativo (type_id) y el origen vive en
+                 "Búsqueda de talentos" (source/medium/campaign). -->
+            <xpath expr="//page[@name='application_details']" position="inside">
+                <group string="Perfil BCA">
+                    <field name="bca_ramo"/>
+                    <field name="bca_perfil_laboral"/>
+                </group>
+            </xpath>
+
+            <!-- Pestañas BCA propias (HU-1.2 / Etapa 12). -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Identificación" name="bca_identificacion">
+                    <group>
+                        <group string="Datos personales">
+                            <field name="bca_genero"/>
+                            <field name="bca_fecha_nacimiento"/>
+                            <field name="bca_edad"/>
+                        </group>
+                        <group string="Identidad (Id interno PCA)">
+                            <field name="bca_rfc"/>
+                            <field name="bca_curp"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Evaluación PDA" name="bca_pda">
+                    <group>
+                        <group string="Resultado PDA">
+                            <field name="bca_pda_nivel"/>
+                            <field name="bca_pda_correlacion"/>
+                            <field name="bca_pda_perfil"/>
+                        </group>
+                        <group string="Compuerta de riesgo (L1)">
+                            <field name="bca_pda_riesgo"/>
+                            <field name="bca_pda_visto_bueno_promotor"
+                                   invisible="not bca_pda_riesgo"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Habilitación" name="bca_habilitacion">
+                    <group>
+                        <group string="Cédula / Claves">
+                            <field name="bca_aseguradora_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="bca_clave_arranque"/>
+                            <field name="bca_clave_definitiva"/>
+                            <field name="bca_fecha_cedula"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

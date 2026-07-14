@@ -1,0 +1,225 @@
+// Paleta de marca del prototipo (Tablero HD Seguros - Standalone.html)
+$bca-bg:        #F4F5F7;
+$bca-card:      #FFFFFF;
+$bca-wine:      #7A2E52;
+$bca-wine-soft: #FDF6F9;
+$bca-wine-hov:  #9A3E6A;
+$bca-teal:      #1F9E8F;
+$bca-ok:        #2E9E5B;
+$bca-warn:      #E0A526;
+$bca-danger:    #D14545;
+$bca-ink:       #2C2C34;
+$bca-muted:     #6B7280;
+$bca-border:    #E3E5EA;
+
+.o_bca_dashboard {
+    background: $bca-bg;
+    min-height: 100%;
+    padding: 20px 24px 40px;
+    color: $bca-ink;
+    overflow: auto;
+
+    .o_bca_loading {
+        padding: 80px;
+        text-align: center;
+        color: $bca-muted;
+        font-size: 15px;
+    }
+
+    .o_bca_header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+    .o_bca_title {
+        font-size: 22px;
+        font-weight: 700;
+        color: $bca-wine;
+        margin: 0;
+    }
+    .o_bca_moneda {
+        font-size: 12px;
+        color: $bca-muted;
+    }
+
+    // ----------------------------------------------------------- grid 3x2
+    .o_bca_grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+    @media (max-width: 1200px) {
+        .o_bca_grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 800px) {
+        .o_bca_grid { grid-template-columns: 1fr; }
+    }
+
+    .o_bca_card {
+        background: $bca-card;
+        border: 1px solid $bca-border;
+        border-radius: 10px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .o_bca_card_kicker {
+        font-size: 13px;
+        font-weight: 600;
+        color: $bca-wine;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    // ----------------------------------------------------------- hero figs
+    .o_bca_hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .o_bca_figure {
+        border: none;
+        background: transparent;
+        text-align: left;
+        padding: 6px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        transition: background 0.12s ease;
+
+        &:hover { background: $bca-wine-soft; }
+        .o_bca_num { font-size: 34px; font-weight: 700; line-height: 1; }
+        .o_bca_lbl { font-size: 12px; color: $bca-muted; margin-top: 4px; }
+    }
+    .o_bca_figure--primary .o_bca_num { color: $bca-wine; }
+
+    .o_bca_hero_aside { text-align: right; }
+    .o_bca_money {
+        font-size: 18px;
+        font-weight: 600;
+        &.o_bca_money--big { font-size: 26px; color: $bca-wine; }
+    }
+    .o_bca_money_lbl { font-size: 11px; color: $bca-muted; }
+
+    // ----------------------------------------------------------- chips
+    .o_bca_chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .o_bca_chip {
+        border: 1px solid $bca-border;
+        background: #fff;
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 12px;
+        color: $bca-ink;
+        cursor: pointer;
+        transition: border-color 0.12s ease, background 0.12s ease;
+
+        b { margin-left: 4px; }
+        &:hover { border-color: $bca-wine; background: $bca-wine-soft; }
+        &.o_bca_chip--ok b { color: $bca-ok; }
+        &.o_bca_chip--warn b { color: $bca-warn; }
+        &.o_bca_chip--danger b { color: $bca-danger; }
+    }
+
+    // ----------------------------------------------------------- charts
+    .o_bca_chart_wrap {
+        position: relative;
+        height: 120px;
+        canvas { max-width: 100%; }
+    }
+
+    // ----------------------------------------------------------- ramos list
+    .o_bca_ramos {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        li {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 3px 0;
+            border-top: 1px solid $bca-border;
+            span { color: $bca-muted; }
+        }
+    }
+
+    .o_bca_fifo, .o_bca_factores {
+        font-size: 12px;
+        color: $bca-muted;
+        b { color: $bca-ink; }
+    }
+
+    // ----------------------------------------------------------- semáforos
+    .o_bca_semaforos {
+        display: flex;
+        gap: 12px;
+        justify-content: space-around;
+        padding: 14px 0;
+        flex: 1;
+        align-items: center;
+    }
+    .o_bca_semaforo {
+        border: none;
+        cursor: pointer;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 12px;
+        border-radius: 12px;
+        transition: background 0.12s ease;
+
+        &:hover { background: $bca-bg; }
+        .o_bca_num {
+            font-size: 30px;
+            font-weight: 700;
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        .o_bca_lbl { font-size: 12px; color: $bca-muted; }
+        &.o_bca_semaforo--ok .o_bca_num { background: $bca-ok; }
+        &.o_bca_semaforo--warn .o_bca_num { background: $bca-warn; }
+        &.o_bca_semaforo--danger .o_bca_num { background: $bca-danger; }
+    }
+
+    // ----------------------------------------------------------- importaciones
+    .o_bca_import_head {
+        border: none;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+        padding: 6px 8px;
+        border-radius: 8px;
+        &:hover { background: $bca-wine-soft; }
+        .o_bca_import_file { font-weight: 600; font-size: 14px; }
+        .o_bca_import_date { font-size: 12px; color: $bca-muted; }
+    }
+    .o_bca_tiles {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    .o_bca_tile {
+        background: $bca-bg;
+        border-radius: 8px;
+        padding: 10px 6px;
+        text-align: center;
+        b { display: block; font-size: 22px; font-weight: 700; }
+        span { font-size: 11px; color: $bca-muted; }
+        &.o_bca_tile--ok b { color: $bca-ok; }
+        &.o_bca_tile--warn b { color: $bca-warn; }
+        &.o_bca_tile--danger b { color: $bca-danger; }
+    }
+
+    .o_bca_empty { font-size: 12px; color: $bca-muted; }
+}

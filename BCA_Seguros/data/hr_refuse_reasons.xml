@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Motivos de rechazo del embudo de reclutamiento (Etapa 12 Fase D, HU-1.7).
+         Al rechazar un candidato hr_recruitment exige seleccionar un motivo. -->
+    <data noupdate="1">
+
+        <record id="refuse_reason_declinado_prospecto" model="hr.applicant.refuse.reason">
+            <field name="name">Declinado por Prospecto</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="refuse_reason_declinado_bca" model="hr.applicant.refuse.reason">
+            <field name="name">Declinado por BCA</field>
+            <field name="sequence">20</field>
+        </record>
+
+    </data>
+</odoo>

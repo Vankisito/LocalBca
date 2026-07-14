@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         Automatizaciones de Reclutamiento (Etapa 12 Fase D, HU-1.7).
+         D-17: las automatizaciones SOLO emiten avisos; la lógica transaccional
+         (conversión) vive en el override de write() en Python.
+
+         L6 — Aviso al cambiar de etapa (on_stage_set): publica una nota en el
+         candidato del embudo comercial (agentes y promotorías) cuando avanza de etapa.
+
+         Diferidos (SOP/HU futura): L3 (recordatorio a 3 días / no localizado) y
+         L5 (no-show → Stand by) requieren triggers on_time por campo de fecha y
+         una etapa "Stand by" fuera del alcance de esta etapa.
+         ================================================================ -->
+    <data noupdate="1">
+
+        <record id="automation_aviso_cambio_etapa" model="base.automation">
+            <field name="name">Reclutamiento BCA: aviso al cambiar de etapa</field>
+            <field name="model_id" ref="hr_recruitment.model_hr_applicant"/>
+            <field name="trigger">on_stage_set</field>
+        </record>
+
+        <record id="action_aviso_cambio_etapa" model="ir.actions.server">
+            <field name="name">Aviso cambio de etapa (Reclutamiento BCA)</field>
+            <field name="model_id" ref="hr_recruitment.model_hr_applicant"/>
+            <field name="base_automation_id" ref="automation_aviso_cambio_etapa"/>
+            <field name="state">code</field>
+            <field name="code">
+job_agente = env.ref('BCA_Seguros.job_reclutamiento_agente', raise_if_not_found=False)
+job_promotoria = env.ref('BCA_Seguros.job_captacion_promotoria', raise_if_not_found=False)
+jobs_comerciales = [j for j in (job_agente, job_promotoria) if j]
+for rec in records:
+    if rec.job_id in jobs_comerciales and rec.stage_id:
+        rec.message_post(body="El candidato avanzó a la etapa: %s" % rec.stage_id.name)
+            </field>
+        </record>
+
+    </data>
+</odoo>

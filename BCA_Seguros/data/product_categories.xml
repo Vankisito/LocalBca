@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Raíz BCA -->
+        <record id="product_cat_seguros" model="product.category">
+            <field name="name">Productos de Seguro BCA</field>
+        </record>
+
+        <!-- MetLife -->
+        <record id="product_cat_metlife" model="product.category">
+            <field name="name">MetLife</field>
+            <field name="parent_id" ref="BCA_Seguros.product_cat_seguros"/>
+        </record>
+
+        <record id="product_cat_metlife_vida" model="product.category">
+            <field name="name">Vida</field>
+            <field name="parent_id" ref="BCA_Seguros.product_cat_metlife"/>
+        </record>
+
+        <record id="product_cat_metlife_gmm" model="product.category">
+            <field name="name">GMM</field>
+            <field name="parent_id" ref="BCA_Seguros.product_cat_metlife"/>
+        </record>
+
+        <!-- Qualitas -->
+        <record id="product_cat_qualitas" model="product.category">
+            <field name="name">Qualitas</field>
+            <field name="parent_id" ref="BCA_Seguros.product_cat_seguros"/>
+        </record>
+
+        <record id="product_cat_qualitas_autos" model="product.category">
+            <field name="name">Autos</field>
+            <field name="parent_id" ref="BCA_Seguros.product_cat_qualitas"/>
+        </record>
+
+    </data>
+</odoo>

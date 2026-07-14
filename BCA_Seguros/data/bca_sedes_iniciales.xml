@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         Catálogo seed de sedes / plazas (SI-Sede).
+         PLACEHOLDER: la lista oficial de plazas la provee BCA y sustituirá
+         estos registros. noupdate="1" para no clobberar ediciones del cliente.
+         ================================================================ -->
+    <data noupdate="1">
+
+        <record id="sede_matriz" model="bca.sede">
+            <field name="name">Matriz</field>
+            <field name="codigo">MTZ</field>
+        </record>
+
+        <record id="sede_cdmx" model="bca.sede">
+            <field name="name">Ciudad de México</field>
+            <field name="codigo">CDMX</field>
+        </record>
+
+        <record id="sede_monterrey" model="bca.sede">
+            <field name="name">Monterrey</field>
+            <field name="codigo">MTY</field>
+        </record>
+
+    </data>
+</odoo>

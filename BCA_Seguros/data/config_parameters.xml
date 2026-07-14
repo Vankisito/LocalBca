@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate="1": semilla del valor por defecto. Si el Director Comercial
+         ajusta los días de gracia, un -u no debe revertir su cambio. -->
+    <data noupdate="1">
+
+        <!-- Período de gracia (días) para clasificar el estatus de pago de una
+             póliza: si la fecha pagada efectiva + gracia >= hoy → al_corriente,
+             de lo contrario → vencido. Consumido por
+             bca.poliza._compute_estatus_pago. -->
+        <record id="param_dias_gracia_pago" model="ir.config_parameter">
+            <field name="key">bca_seguros.dias_gracia_pago</field>
+            <field name="value">30</field>
+        </record>
+
+    </data>
+</odoo>

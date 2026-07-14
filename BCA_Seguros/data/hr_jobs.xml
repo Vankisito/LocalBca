@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="job_captacion_promotoria" model="hr.job">
+            <field name="name">Promotores</field>
+            <field name="description">Reclutamiento de nuevas promotorías afiliadas al Grupo BCA. Al llegar a "Acuerdo de Arranque" se crea automáticamente el res.partner promotoría adscrito a Grupo BCA.</field>
+        </record>
+
+        <record id="job_reclutamiento_agente" model="hr.job">
+            <field name="name">Agentes</field>
+            <field name="description">Reclutamiento de agentes de seguros para una promotoría afiliada. Requiere especificar la promotoría destino en el formulario del candidato.</field>
+        </record>
+
+        <!-- Puesto interno genérico (BUG-002, D-20/D-23): agrupa Auxiliar
+             Administrativa, Reclutador, Gerencial y cualquier otro puesto no
+             comercial. Sin job_ids en las etapas BCA: usa el embudo NATIVO de
+             Odoo (New…Contract Signed) y cierra con su hired nativo, sin
+             Fase A/B, sin cédula, sin partner agente ni puente. -->
+        <record id="job_interno" model="hr.job">
+            <field name="name">Puesto Interno</field>
+            <field name="description">Puesto interno (Auxiliar Administrativa, Reclutador, Gerencial, etc.). Usa el embudo nativo de Reclutamiento de Odoo; no recorre el embudo comercial de Agentes/Promotores.</field>
+        </record>
+
+    </data>
+</odoo>

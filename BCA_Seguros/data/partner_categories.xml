@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate="1": protege estos registros de ser sobreescritos en odoo-bin -u.
+         Sin esta bandera, una actualización del módulo podría blanquear nombres
+         editados manualmente en producción. -->
+    <data noupdate="1">
+
+        <record id="partner_cat_holding" model="res.partner.category">
+            <field name="name">Holding BCA</field>
+        </record>
+
+        <record id="partner_cat_aseguradora" model="res.partner.category">
+            <field name="name">Aseguradora</field>
+        </record>
+
+        <record id="partner_cat_promotoria" model="res.partner.category">
+            <field name="name">Promotoría BCA</field>
+        </record>
+
+        <record id="partner_cat_agente" model="res.partner.category">
+            <field name="name">Agente BCA</field>
+        </record>
+
+        <record id="partner_cat_contratante" model="res.partner.category">
+            <field name="name">Contratante BCA</field>
+        </record>
+
+    </data>
+</odoo>

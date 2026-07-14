@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         Embudo de reclutamiento de FIGURAS COMERCIALES (D-20). Aplica por igual
+         a Agentes (job_reclutamiento_agente) y Promotorías (job_captacion_promotoria):
+         ambos recorren el mismo embudo de 12 etapas (Fase A + Fase B).
+
+         Etapas como DATOS DEL MÓDULO para reproducibilidad en CI/sandbox
+         (evita el drift D-13). Se referencian por env.ref y se comparan por
+         `sequence`, NUNCA por ID hardcodeado.
+
+         Las 13 etapas llevan job_ids → [job_reclutamiento_agente, job_captacion_promotoria]
+         para NO aparecer en puestos internos. La conversión se dispara por CRUCE de
+         umbral de `sequence` (hr_applicant._bca_procesar_transicion_etapa), en 3 fases:
+           - "Acuerdo de Arranque" (seq 6): traspaso Reclutamiento→Capital Humano +
+             creación del contacto res.partner (agente/promotoría según el job).
+           - "Cédula Emitida" (seq 11, hired_stage=True): asienta la clave por aseguradora.
+           - "Clave Definitiva" (seq 13): crea el hr.employee del agente.
+         "En Desarrollo Comercial" (seq 12) es post-habilitación.
+
+         Los PUESTOS INTERNOS (Auxiliar admin., Reclutador, Gerencial, cualquier otro
+         hr.job) usan el embudo NATIVO de Odoo y cierran con su etapa hired nativa
+         ("Contract Signed"). Ya no existe una etapa BCA "Contratado (Alta Interna)"
+         (retirada en 19.0.1.7.7; ver migrations/19.0.1.7.7).
+         noupdate="1": no clobberar reordenamientos del cliente.
+         ================================================================ -->
+    <data noupdate="1">
+
+        <record id="stage_recibido" model="hr.recruitment.stage">
+            <field name="name">Recibido</field>
+            <field name="sequence">1</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_prospeccion" model="hr.recruitment.stage">
+            <field name="name">Prospección</field>
+            <field name="sequence">2</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_cafe" model="hr.recruitment.stage">
+            <field name="name">Café</field>
+            <field name="sequence">3</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_entrevista" model="hr.recruitment.stage">
+            <field name="name">Cena</field>
+            <field name="sequence">4</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_evaluacion_pda" model="hr.recruitment.stage">
+            <field name="name">Evaluación PDA</field>
+            <field name="sequence">5</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_acuerdo_arranque" model="hr.recruitment.stage">
+            <field name="name">Acuerdo de Arranque</field>
+            <field name="sequence">6</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_clave_arranque" model="hr.recruitment.stage">
+            <field name="name">Clave de Arranque</field>
+            <field name="sequence">7</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_inscripcion_cia" model="hr.recruitment.stage">
+            <field name="name">Inscripción CIA</field>
+            <field name="sequence">8</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_curso_cedula" model="hr.recruitment.stage">
+            <field name="name">Curso de Cédula</field>
+            <field name="sequence">9</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_examen" model="hr.recruitment.stage">
+            <field name="name">Examen</field>
+            <field name="sequence">10</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_cedula_emitida" model="hr.recruitment.stage">
+            <field name="name">Cédula Emitida</field>
+            <field name="sequence">11</field>
+            <field name="hired_stage" eval="True"/>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <record id="stage_en_desarrollo" model="hr.recruitment.stage">
+            <field name="name">En Desarrollo Comercial</field>
+            <field name="sequence">12</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+        <!-- Clave Definitiva (seq 13, post-desarrollo): dispara la creación del
+             hr.employee del agente (Fase 3). Exige el dato bca_clave_definitiva.
+             NO es hired_stage (la etapa hired sigue siendo "Cédula Emitida"). -->
+        <record id="stage_clave_definitiva" model="hr.recruitment.stage">
+            <field name="name">Clave Definitiva</field>
+            <field name="sequence">13</field>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+        </record>
+
+    </data>
+</odoo>

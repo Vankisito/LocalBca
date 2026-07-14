@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_recibo_list" model="ir.ui.view">
+        <field name="name">bca.recibo.list</field>
+        <field name="model">bca.recibo</field>
+        <field name="arch" type="xml">
+            <list string="Recibos"
+                  decoration-warning="estado == 'pendiente'"
+                  decoration-success="estado == 'pagado'"
+                  decoration-muted="estado == 'cancelado'">
+                <field name="name"/>
+                <field name="poliza_id"/>
+                <field name="numero_recibo"/>
+                <field name="fecha_desde" optional="show"/>
+                <field name="fecha_hasta" optional="show"/>
+                <field name="prima_neta" widget="monetary" sum="Prima Neta"/>
+                <field name="prima_total" widget="monetary"
+                       sum="Prima Total" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="pca_currency_id" column_invisible="True"/>
+                <field name="fecha_pago" optional="show"/>
+                <field name="conducto_id" optional="hide"/>
+                <field name="agente_poliza_id" optional="show"/>
+                <field name="agente_id" optional="hide"/>
+                <field name="promotoria_id" optional="hide"/>
+                <field name="pca_aplicada" widget="monetary"
+                       sum="PCA" optional="show"/>
+                <field name="factor_aplicado" optional="hide"/>
+                <field name="estado" widget="badge"
+                       decoration-warning="estado == 'pendiente'"
+                       decoration-success="estado == 'pagado'"
+                       decoration-danger="estado == 'cancelado'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_recibo_form" model="ir.ui.view">
+        <field name="name">bca.recibo.form</field>
+        <field name="model">bca.recibo</field>
+        <field name="arch" type="xml">
+            <form string="Recibo">
+                <header>
+                    <button name="action_registrar_pago_ui"
+                            type="object"
+                            string="Registrar Pago"
+                            class="oe_highlight"
+                            invisible="estado != 'pendiente'"
+                            groups="BCA_Seguros.group_bca_operador,BCA_Seguros.group_bca_lider,BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"
+                            confirm="Vas a registrar el pago de este recibo. La PCA y el factor aplicado quedarán congelados y no podrán editarse. ¿Continuar?"/>
+                    <button name="action_cancelar_pago"
+                            type="object"
+                            string="Cancelar Pago"
+                            confirm="Vas a deshacer este pago: el recibo volverá a Pendiente y se limpiarán los datos del pago (PCA, conducto, fecha). ¿Continuar?"
+                            invisible="estado != 'pagado'"
+                            groups="BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"/>
+                    <button name="action_anular_recibo"
+                            type="object"
+                            string="Anular Recibo"
+                            confirm="Vas a anular este recibo: quedará Cancelado y no se cobrará. ¿Continuar?"
+                            invisible="estado != 'pendiente'"
+                            groups="BCA_Seguros.group_bca_director_comercial,BCA_Seguros.group_bca_director"/>
+                    <field name="estado" widget="statusbar"
+                           statusbar_visible="pendiente,pagado,cancelado"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Cancelado"
+                            bg_color="bg-danger"
+                            invisible="estado != 'cancelado'"/>
+                    <div class="oe_title">
+                        <label for="name" string="Folio"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Póliza">
+                            <field name="poliza_id"
+                                   options="{'no_create': True}"
+                                   readonly="estado != 'pendiente'"/>
+                            <field name="numero_recibo"/>
+                            <field name="fecha_desde"
+                                   readonly="estado != 'pendiente'"/>
+                            <field name="fecha_hasta"
+                                   readonly="estado != 'pendiente'"/>
+                            <field name="currency_id" readonly="1"/>
+                        </group>
+                        <group string="Importes">
+                            <!-- Vienen del plan de pagos de la póliza (readonly).
+                                 Solo prima_total ("lo que paga el cliente") es
+                                 editable mientras el recibo esté pendiente. -->
+                            <field name="monto_modal" widget="monetary" readonly="1"/>
+                            <field name="recargo" widget="monetary" readonly="1"/>
+                            <field name="prima_neta" widget="monetary" readonly="1"/>
+                            <field name="prima_total" widget="monetary"
+                                   readonly="estado != 'pendiente'"/>
+                        </group>
+                    </group>
+                    <group string="Datos del Pago"
+                           invisible="estado == 'cancelado'">
+                        <group>
+                            <field name="fecha_pago"
+                                   readonly="estado == 'pagado'"
+                                   required="estado == 'pendiente'"
+                                   help="Completá antes de presionar 'Registrar Pago'."/>
+                            <field name="conducto_id"
+                                   options="{'no_create': True}"
+                                   required="estado == 'pendiente'"
+                                   readonly="estado == 'pagado'"/>
+                            <field name="folio_endoso"
+                                   readonly="estado == 'pagado'"/>
+                        </group>
+                        <group string="PCA congelada"
+                               invisible="estado != 'pagado'">
+                            <field name="pca_currency_id" invisible="1"/>
+                            <field name="pca_aplicada" readonly="1"/>
+                            <field name="factor_aplicado" readonly="1"/>
+                            <field name="motivo_exclusion_pca" readonly="1"
+                                   invisible="not motivo_exclusion_pca"/>
+                        </group>
+                    </group>
+                    <group string="Foto inmutable (al pagar)"
+                           invisible="estado != 'pagado'">
+                        <group>
+                            <field name="agente_id" readonly="1"/>
+                            <field name="promotoria_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="bitacora_linea_id" readonly="1"
+                                   invisible="not bitacora_linea_id"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_recibo_search" model="ir.ui.view">
+        <field name="name">bca.recibo.search</field>
+        <field name="model">bca.recibo</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Recibos">
+                <field name="name"/>
+                <field name="poliza_id"/>
+                <field name="agente_poliza_id"/>
+                <field name="agente_id"/>
+                <field name="promotoria_id"/>
+                <field name="conducto_id"/>
+                <separator/>
+                <filter name="filter_pendientes" string="Pendientes"
+                        domain="[('estado', '=', 'pendiente')]"/>
+                <filter name="filter_pagados" string="Pagados"
+                        domain="[('estado', '=', 'pagado')]"/>
+                <filter name="filter_cancelados" string="Cancelados"
+                        domain="[('estado', '=', 'cancelado')]"/>
+                <separator/>
+                <filter name="filter_pagados_anio_actual"
+                        string="Pagados este año"
+                        domain="[('estado', '=', 'pagado'),
+                                 ('fecha_pago', '&gt;=', (context_today().replace(month=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="group_poliza" string="Póliza"
+                            context="{'group_by': 'poliza_id'}"/>
+                    <filter name="group_estado" string="Estado"
+                            context="{'group_by': 'estado'}"/>
+                    <filter name="group_agente" string="Agente"
+                            context="{'group_by': 'agente_poliza_id'}"/>
+                    <filter name="group_promotoria" string="Promotoría"
+                            context="{'group_by': 'promotoria_id'}"/>
+                    <filter name="group_conducto" string="Conducto"
+                            context="{'group_by': 'conducto_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_recibo" model="ir.actions.act_window">
+        <field name="name">Recibos</field>
+        <field name="res_model">bca.recibo</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="BCA_Seguros.view_recibo_search"/>
+        <field name="context">{'search_default_filter_pendientes': 1}</field>
+    </record>
+
+</odoo>

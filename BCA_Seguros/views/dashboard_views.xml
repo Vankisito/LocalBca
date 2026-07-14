@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         Tablero de Inicio (Etapa 3.5) — client action OWL.
+         El componente 'bca_dashboard' se registra en
+         registry.category("actions"). Datos vía bca.dashboard
+         (AbstractModel solo-lectura). Ver D-12.
+         ============================================================ -->
+    <record id="action_dashboard" model="ir.actions.client">
+        <field name="name">Tablero</field>
+        <field name="tag">bca_dashboard</field>
+    </record>
+
+</odoo>

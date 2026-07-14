@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_bca" model="ir.ui.view">
+        <field name="name">res.partner.form.bca</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Identidad BCA: la pestaña insignia es la PRIMERA pestaña del
+                 form de contacto (antes de "Contactos"), para máxima identidad
+                 BCA. Ancla robusto en 'contact_addresses' (página de `base`,
+                 siempre presente). -->
+            <xpath expr="//page[@name='contact_addresses']" position="before">
+                <page name="bca_seguros" string="BCA Seguros">
+                    <group>
+                        <group name="bca_clasificacion" string="Clasificación">
+                            <field name="bca_tipo"/>
+                            <!-- Parent jerárquico BCA: Holding para Promotoría,
+                                 Promotoría para Agente. El _check_jerarquia valida
+                                 el tipo final al guardar; el domain es solo guía
+                                 UX. Necesario en el tab porque la vista base oculta
+                                 parent_id cuando is_company=True. -->
+                            <field name="parent_id"
+                                   string="Pertenece a"
+                                   domain="[('bca_tipo', 'in', ['holding', 'promotoria'])]"
+                                   options="{'no_create': True}"
+                                   required="bca_tipo in ('promotoria', 'agente')"
+                                   invisible="bca_tipo not in ('promotoria', 'agente')"/>
+                            <field name="bca_codigo_aseguradora"
+                                   invisible="bca_tipo != 'aseguradora'"/>
+                            <field name="bca_promotoria_id"
+                                   readonly="1"
+                                   invisible="bca_tipo != 'agente'"/>
+                            <!-- Roles de póliza (no excluyentes, derivados de
+                                 las pólizas). Readonly: un contacto puede ser
+                                 contratante y asegurado a la vez, además de su
+                                 posición de red. -->
+                            <field name="bca_es_contratante" readonly="1"/>
+                            <field name="bca_es_asegurado" readonly="1"/>
+                        </group>
+                        <group name="bca_agente" string="Datos de Agente"
+                               invisible="bca_tipo != 'agente'">
+                            <!-- Rollup readonly: se deriva de las claves por
+                                 aseguradora (abajo). No editable a mano. -->
+                            <field name="bca_estado_agente" readonly="1"/>
+                        </group>
+                    </group>
+                    <group name="bca_claves" string="Claves por Aseguradora"
+                           invisible="bca_tipo != 'agente'">
+                        <field name="agente_aseguradora_ids" nolabel="1">
+                            <list editable="bottom">
+                                <field name="aseguradora_id"
+                                       options="{'no_create': True}"/>
+                                <field name="clave_agente"/>
+                                <field name="estado" widget="badge"
+                                       decoration-success="estado == 'clave_definitiva'"
+                                       decoration-info="estado == 'clave_arranque'"
+                                       decoration-muted="estado == 'prospecto'"/>
+                                <field name="fecha_licencia"/>
+                            </list>
+                        </field>
+                    </group>
+                    <!-- Datos de contratante: visibles para individuos y para
+                         cualquier contacto que ya tenga un rol de póliza. -->
+                    <group invisible="is_company and not bca_es_contratante and not bca_es_asegurado">
+                        <group name="bca_demograficos" string="Datos Demográficos">
+                            <!-- RFC → vat, domicilio → street/city/zip/state_id ya
+                                 están en el form estándar de res.partner. -->
+                            <field name="bca_fecha_nacimiento"/>
+                            <field name="bca_estado_civil"/>
+                            <field name="bca_genero"/>
+                        </group>
+                        <group name="bca_referencias_pago" string="Referencias de Pago (MetLife)">
+                            <field name="bca_ref_prima_basica_trad"/>
+                            <field name="bca_ref_prima_medica"/>
+                            <field name="bca_fondo_variable"/>
+                            <field name="bca_fondo_fijo"/>
+                            <field name="bca_fondo_variable_ppr"/>
+                            <field name="bca_fondo_fijo_ppr"/>
+                            <field name="bca_fondo_variable_cpea"/>
+                            <field name="bca_fondo_fijo_cpea"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- C1: smart buttons de Pólizas y Recibos. Visibles cuando el
+                 contacto tiene rol de póliza (contratante/asegurado) o es
+                 agente. bca_es_contratante/bca_es_asegurado están en la vista
+                 (grupo Clasificación), por lo que las expresiones resuelven. -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_bca_polizas"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="not bca_es_contratante and not bca_es_asegurado and bca_tipo != 'agente'">
+                    <field name="bca_poliza_count" widget="statinfo" string="Pólizas"/>
+                </button>
+                <button name="action_view_bca_recibos"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-money"
+                        invisible="not bca_es_contratante and not bca_es_asegurado and bca_tipo != 'agente'">
+                    <field name="bca_recibo_count" widget="statinfo" string="Recibos"/>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_partner_list_bca" model="ir.ui.view">
+        <field name="name">res.partner.list.bca</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <!-- Insertar al final del list (más robusto que asumir orden de
+                 columnas heredadas que pueden variar entre versiones). -->
+            <xpath expr="//list" position="inside">
+                <field name="bca_tipo" optional="hide"/>
+                <field name="bca_estado_agente" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_partner_search_bca" model="ir.ui.view">
+        <field name="name">res.partner.search.bca</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="filter_clientes_aseguradoras" string="Clientes (Aseguradoras)"
+                        domain="[('bca_tipo', '=', 'aseguradora')]"/>
+                <filter name="filter_promotorias" string="Promotorías"
+                        domain="[('bca_tipo', '=', 'promotoria')]"/>
+                <filter name="filter_agentes" string="Agentes"
+                        domain="[('bca_tipo', '=', 'agente')]"/>
+                <separator/>
+                <filter name="filter_contratantes" string="Contratantes"
+                        domain="[('bca_es_contratante', '=', True)]"/>
+                <filter name="filter_asegurados" string="Asegurados"
+                        domain="[('bca_es_asegurado', '=', True)]"/>
+                <separator/>
+                <filter name="filter_agente_definitiva" string="Agentes con Clave Definitiva"
+                        domain="[('bca_tipo', '=', 'agente'),
+                                 ('bca_estado_agente', '=', 'clave_definitiva')]"/>
+                <filter name="filter_agente_arranque" string="Agentes con Clave de Arranque"
+                        domain="[('bca_tipo', '=', 'agente'),
+                                 ('bca_estado_agente', '=', 'clave_arranque')]"/>
+                <filter name="filter_agente_prospecto" string="Agentes Prospecto"
+                        domain="[('bca_tipo', '=', 'agente'),
+                                 ('bca_estado_agente', '=', 'prospecto')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Listas focalizadas BCA: la lista genérica de contactos trae
+         teléfono/email/ciudad (vacíos para aseguradoras/promotorías) y omite
+         lo relevante del negocio. Standalone (no heredadas) para controlar las
+         columnas; el form sigue siendo el heredado con la pestaña BCA Seguros. -->
+    <record id="view_partner_empresa_list_bca" model="ir.ui.view">
+        <field name="name">res.partner.empresa.list.bca</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Empresas BCA">
+                <field name="name"/>
+                <field name="bca_codigo_aseguradora" optional="show"/>
+                <field name="phone" optional="hide"/>
+                <field name="email" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_partner_agente_list_bca" model="ir.ui.view">
+        <field name="name">res.partner.agente.list.bca</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Agentes">
+                <field name="name"/>
+                <field name="parent_id" string="Promotoría"/>
+                <field name="bca_promotoria_id" optional="hide"/>
+                <field name="bca_estado_agente" widget="badge"
+                       decoration-success="bca_estado_agente == 'clave_definitiva'"
+                       decoration-info="bca_estado_agente == 'clave_arranque'"
+                       decoration-muted="bca_estado_agente == 'prospecto'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_partner_aseguradoras" model="ir.actions.act_window">
+        <field name="name">Aseguradoras</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="BCA_Seguros.view_partner_empresa_list_bca"/>
+        <field name="domain">[('bca_tipo', '=', 'aseguradora')]</field>
+        <field name="context">{'default_bca_tipo': 'aseguradora', 'default_is_company': True}</field>
+    </record>
+
+    <record id="action_partner_promotorias" model="ir.actions.act_window">
+        <field name="name">Promotorías</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="BCA_Seguros.view_partner_empresa_list_bca"/>
+        <field name="domain">[('bca_tipo', '=', 'promotoria')]</field>
+        <field name="context">{'default_bca_tipo': 'promotoria', 'default_is_company': True}</field>
+    </record>
+
+    <record id="action_partner_agentes" model="ir.actions.act_window">
+        <field name="name">Agentes</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="BCA_Seguros.view_partner_agente_list_bca"/>
+        <field name="domain">[('bca_tipo', '=', 'agente')]</field>
+        <field name="context">{'default_bca_tipo': 'agente'}</field>
+    </record>
+
+</odoo>

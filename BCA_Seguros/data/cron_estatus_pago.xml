@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate="1": el administrador puede ajustar la hora/intervalo del cron
+         sin que un -u lo revierta. -->
+    <data noupdate="1">
+
+        <!-- Aging diario del estatus de pago. estatus_pago es un computed que
+             depende de "hoy"; sin este refresco, una póliza activa nunca pasaría
+             de 'al_corriente' a 'vencido' por el solo paso del tiempo. -->
+        <record id="cron_refrescar_estatus_pago" model="ir.cron">
+            <field name="name">BCA: Refrescar estatus de pago de pólizas</field>
+            <field name="model_id" ref="model_bca_poliza"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_refrescar_estatus_pago()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 01:00:00')"/>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

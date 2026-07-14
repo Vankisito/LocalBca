@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================================
+         GRUPOS BCA
+
+         NOTA v19: res.groups.privilege no existe en este build de Odoo 19.
+         Los grupos quedan sin categoría (privilege_id omitido).
+         Cuando esté disponible en el build de producción, agregar:
+           <record id="priv_bca_seguros" model="res.groups.privilege">
+               <field name="name">BCA Seguros</field>
+           </record>
+           + <field name="privilege_id" ref="BCA_Seguros.priv_bca_seguros"/>
+           en cada grupo.
+
+         JERARQUÍA (implied_ids = membresía acumulativa):
+           group_bca_agente          — independiente, NO en la cadena
+           group_bca_operador        — sin implied_ids
+           group_bca_lider           — implied_ids: operador
+           group_bca_director_comercial — implied_ids: lider (hereda operador+lider)
+           group_bca_director        — implied_ids: director_comercial (hereda todo)
+
+         ADVERTENCIA implied_ids (Plan §2.4.3 / corrección A3):
+         Un Director pertenece SIMULTÁNEAMENTE a todos los grupos de la cadena.
+         Odoo combina record rules del mismo modelo con AND.
+         Por eso TODOS los grupos no-agente DEBEN tener una rule
+         explícita [(1,'=',1)] en cada modelo — ver security/record_rules.xml.
+         ================================================================ -->
+
+    <!-- Agente: acceso mínimo, solo sus propios registros -->
+    <record id="group_bca_agente" model="res.groups">
+        <field name="name">Agente BCA</field>
+    </record>
+
+    <!-- Operador: acceso operacional de lectura/escritura.
+         implied_ids = product.group_product_manager:
+         el Operador es responsable de mantener el catálogo de productos
+         de seguros (alta de nuevos productos MetLife/Qualitas conforme
+         las aseguradoras publican). Sin este grupo, product.template
+         queda solo en lectura para el Operador. -->
+    <record id="group_bca_operador" model="res.groups">
+        <field name="name">Operador BCA</field>
+        <field name="implied_ids" eval="[(4, ref('product.group_product_manager'))]"/>
+    </record>
+
+    <!-- Líder: hereda operador -->
+    <record id="group_bca_lider" model="res.groups">
+        <field name="name">Líder BCA</field>
+        <field name="implied_ids" eval="[(4, ref('BCA_Seguros.group_bca_operador'))]"/>
+    </record>
+
+    <!-- Director Comercial: hereda lider (y por cadena, operador) -->
+    <record id="group_bca_director_comercial" model="res.groups">
+        <field name="name">Director Comercial BCA</field>
+        <field name="implied_ids" eval="[(4, ref('BCA_Seguros.group_bca_lider'))]"/>
+    </record>
+
+    <!-- Director: hereda director_comercial (y por cadena, lider + operador) -->
+    <record id="group_bca_director" model="res.groups">
+        <field name="name">Director BCA</field>
+        <field name="implied_ids" eval="[(4, ref('BCA_Seguros.group_bca_director_comercial'))]"/>
+    </record>
+
+    <!-- ================================================================
+         GRUPOS DE RECLUTAMIENTO (Etapa 12 Fase E, SI-1) — HERMANOS.
+         Fuera de la cadena acumulativa de los 5 grupos anteriores (A3):
+         se apoyan en los grupos NATIVOS de hr_recruitment para el acceso a
+         la app y su ACL. La visibilidad la fija security/record_rules.xml.
+           - Reclutadora: acceso nivel Entrevistador (no ve-todo) + rule
+             user_id==uid → ve solo SUS candidatos.
+           - Capital Humano: acceso nivel Encargado (ve todo, gestiona embudo).
+         Los Directores (BCA) ven todo vía rule [(1,'=',1)] + ACL de lectura,
+         sin poderes nativos de reclutamiento (ver record_rules/ACL).
+         ================================================================ -->
+    <record id="group_bca_reclutadora" model="res.groups">
+        <field name="name">Reclutadora BCA</field>
+        <field name="implied_ids"
+               eval="[(4, ref('hr_recruitment.group_hr_recruitment_interviewer'))]"/>
+    </record>
+
+    <record id="group_bca_capital_humano" model="res.groups">
+        <field name="name">Capital Humano BCA</field>
+        <field name="implied_ids"
+               eval="[(4, ref('hr_recruitment.group_hr_recruitment_user'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_wizard_carga_portafolio_form" model="ir.ui.view">
+        <field name="name">bca.wizard.carga.portafolio.form</field>
+        <field name="model">bca.wizard.carga.portafolio</field>
+        <field name="arch" type="xml">
+            <form string="Cargar Portafolio">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Carga Masiva de Portafolio</h1>
+                    </div>
+                    <div class="alert alert-info" role="status"
+                         invisible="state == 'validado'">
+                        <p class="mb-1">
+                            <strong>Requisitos de la plantilla (.xlsx)</strong> —
+                            usa <strong>Descargar plantilla</strong> para obtener el
+                            formato exacto con columnas de ejemplo.
+                        </p>
+                        <ul class="mb-0">
+                            <li><strong>Hojas:</strong> <code>VIDA</code> y/o
+                                <code>GMM</code> (otras hojas como AUTOS se omiten).</li>
+                            <li><strong>Estructura:</strong> encabezados en la
+                                <strong>fila 1</strong>, datos desde la
+                                <strong>fila 2</strong>.</li>
+                            <li><strong>Columnas obligatorias:</strong> número de póliza
+                                (<code>Póliza</code> en VIDA, <code>Poliza actual</code>
+                                en GMM), <code>Producto</code>,
+                                <code>Clave de Agente</code>,
+                                <code>Nombre del Contratante</code>, <code>Moneda</code>,
+                                <code>Fecha inicio Vigencia</code>,
+                                <code>Fecha Fin Vigencia</code> y
+                                <code>Frecuencia de Pago</code>.</li>
+                            <li><strong>Formatos:</strong> fechas
+                                <code>dd/mm/aaaa</code>; Moneda <code>MXN</code> o
+                                <code>USD</code>; Frecuencia
+                                Mensual/Trimestral/Semestral/Anual.</li>
+                            <li><strong>Deben existir previamente</strong> en la
+                                aseguradora seleccionada el <code>Producto</code> y la
+                                <code>Clave de Agente</code> (si no, esas filas se
+                                rechazan).</li>
+                        </ul>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="aseguradora_id"
+                                   options="{'no_create': True}"
+                                   readonly="state == 'validado'"/>
+                            <field name="modo" readonly="state == 'validado'"/>
+                        </group>
+                        <group>
+                            <field name="archivo" filename="nombre_archivo"
+                                   readonly="state == 'validado'"/>
+                            <field name="nombre_archivo" invisible="1"/>
+                            <field name="state" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Resumen" invisible="state != 'validado'">
+                        <group>
+                            <field name="total_filas"/>
+                            <field name="rechazadas"/>
+                        </group>
+                        <group>
+                            <field name="creadas"/>
+                            <field name="actualizadas"/>
+                        </group>
+                    </group>
+                    <field name="reporte_html" invisible="not reporte_html"/>
+                </sheet>
+                <footer>
+                    <button name="action_validar" type="object"
+                            string="Validar" class="btn-primary"
+                            invisible="state == 'validado'"/>
+                    <button name="action_descargar_plantilla" type="object"
+                            string="Descargar plantilla" icon="fa-download"
+                            class="btn-secondary"
+                            invisible="state == 'validado'"/>
+                    <button name="action_grabar" type="object"
+                            string="Grabar" class="btn-primary"
+                            invisible="state != 'validado'"
+                            confirm="¿Confirmas la creación/actualización de las pólizas validadas?"/>
+                    <button name="action_validar" type="object"
+                            string="Re-validar" class="btn-secondary"
+                            invisible="state != 'validado'"/>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wizard_carga_portafolio" model="ir.actions.act_window">
+        <field name="name">Cargar Portafolio</field>
+        <field name="res_model">bca.wizard.carga.portafolio</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

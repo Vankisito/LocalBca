@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Coberturas por producto MetLife (nativo product.attribute).
+
+         Modelado 100% con el sistema nativo de atributos de Odoo, SIN catálogo
+         propio:
+           · product.attribute  → 2 agrupadores (Básica / Adicionales), ambos
+             create_variant='no_variant' (no generan product.product).
+           · product.attribute.value → catálogo de nombres de cobertura.
+           · product.template.attribute.line → qué coberturas ofrece cada
+             producto (subconjunto). Al crearse, Odoo materializa las
+             product.template.attribute.value (PTAV) que la póliza referencia
+             con dominio por producto (selector Aseguradora→Ramo→Producto→Cobertura).
+
+         Fuente: Specs/01-cobranza-polizas/BCA_Seguros_Catalogo_Coberturas_por_Producto_MetLife.md
+         Solo se siembran las coberturas DOCUMENTADAS en ese catálogo. Los
+         productos MetaLife / Met4U / FlexiLife del PPT no están sembrados como
+         product.template, por lo que no tienen líneas aquí. Primordial (GMM)
+         llegó incompleto en el PPT → catálogo mínimo (no inventar). -->
+    <data>
+
+        <!-- ============================================================
+             ATRIBUTOS AGRUPADORES (no_variant)
+             ============================================================ -->
+        <record id="attr_cobertura_basica" model="product.attribute">
+            <field name="name">Cobertura Básica</field>
+            <field name="create_variant">no_variant</field>
+            <field name="display_type">radio</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="attr_cobertura_adicional" model="product.attribute">
+            <field name="name">Coberturas Adicionales</field>
+            <field name="create_variant">no_variant</field>
+            <field name="display_type">multi</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- ============================================================
+             VALORES — COBERTURA BÁSICA (Vida)
+             ============================================================ -->
+        <record id="val_basica_fallecimiento" model="product.attribute.value">
+            <field name="name">Fallecimiento</field>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="val_basica_temporal" model="product.attribute.value">
+            <field name="name">Básica Temporal</field>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="val_basica_generica" model="product.attribute.value">
+            <field name="name">Básica</field>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- ============================================================
+             VALORES — COBERTURAS ADICIONALES / OPCIONALES
+             Vida
+             ============================================================ -->
+        <record id="val_ad_exencion_primas_invalidez" model="product.attribute.value">
+            <field name="name">Exención de pago de primas por invalidez</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="val_ad_pago_anticipado_invalidez" model="product.attribute.value">
+            <field name="name">Pago anticipado de suma asegurada por invalidez</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="val_ad_pago_sa_invalidez" model="product.attribute.value">
+            <field name="name">Pago de suma asegurada por invalidez</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="val_ad_muerte_accidental" model="product.attribute.value">
+            <field name="name">Indemnización por muerte accidental</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">40</field>
+        </record>
+        <record id="val_ad_muerte_accidental_po" model="product.attribute.value">
+            <field name="name">Indemnización por muerte accidental y/o pérdidas orgánicas</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">50</field>
+        </record>
+        <record id="val_ad_doble_muerte_accidental" model="product.attribute.value">
+            <field name="name">Doble indemnización por muerte accidental y/o pérdidas orgánicas</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">60</field>
+        </record>
+        <record id="val_ad_triple_muerte_accidental" model="product.attribute.value">
+            <field name="name">Triple indemnización por muerte accidental y/o pérdidas orgánicas</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">70</field>
+        </record>
+        <record id="val_ad_muerte_accidental_colectivo" model="product.attribute.value">
+            <field name="name">Indemnización por muerte accidental y/o pérdidas orgánicas por accidente colectivo</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">80</field>
+        </record>
+        <record id="val_ad_graves_enfermedades" model="product.attribute.value">
+            <field name="name">Graves enfermedades</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">90</field>
+        </record>
+        <record id="val_ad_gastos_funerarios" model="product.attribute.value">
+            <field name="name">Gastos funerarios</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">100</field>
+        </record>
+        <record id="val_ad_enfermedad_terminal" model="product.attribute.value">
+            <field name="name">Enfermedad terminal</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">110</field>
+        </record>
+        <record id="val_ad_garantia_fallecimiento" model="product.attribute.value">
+            <field name="name">Garantía de pago por fallecimiento</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">120</field>
+        </record>
+        <record id="val_ad_garantia_primas_invalidez" model="product.attribute.value">
+            <field name="name">Garantía de pago de primas por invalidez</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">130</field>
+        </record>
+
+        <!-- GMM (opcionales) -->
+        <record id="val_ad_metdental" model="product.attribute.value">
+            <field name="name">MetDental Plus</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">200</field>
+        </record>
+        <record id="val_ad_vision" model="product.attribute.value">
+            <field name="name">Visión</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">210</field>
+        </record>
+        <record id="val_ad_emergencia_extranjero" model="product.attribute.value">
+            <field name="name">Emergencia en el extranjero</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">220</field>
+        </record>
+        <record id="val_ad_enf_catastrofica_extranjero" model="product.attribute.value">
+            <field name="name">Enfermedad catastrófica en el extranjero</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">230</field>
+        </record>
+        <record id="val_ad_reduccion_deducible" model="product.attribute.value">
+            <field name="name">Reducción de deducible</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">240</field>
+        </record>
+        <record id="val_ad_estudiantes_extranjero" model="product.attribute.value">
+            <field name="name">Estudiantes en el extranjero</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">250</field>
+        </record>
+        <record id="val_ad_proteccion_garantizada" model="product.attribute.value">
+            <field name="name">Protección Garantizada</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">260</field>
+        </record>
+        <record id="val_ad_suma_asegurada_adicional" model="product.attribute.value">
+            <field name="name">Suma asegurada adicional</field>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="sequence">270</field>
+        </record>
+
+        <!-- ============================================================
+             LÍNEAS POR PRODUCTO (product.template.attribute.line)
+             ============================================================ -->
+
+        <!-- Horizonte -->
+        <record id="ptal_horizonte_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_horizonte"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_fallecimiento')])]"/>
+        </record>
+        <record id="ptal_horizonte_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_horizonte"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [
+                ref('val_ad_exencion_primas_invalidez'),
+                ref('val_ad_pago_anticipado_invalidez'),
+                ref('val_ad_muerte_accidental'),
+                ref('val_ad_muerte_accidental_po'),
+                ref('val_ad_muerte_accidental_colectivo'),
+                ref('val_ad_graves_enfermedades'),
+                ref('val_ad_gastos_funerarios'),
+            ])]"/>
+        </record>
+
+        <!-- EducaLife -->
+        <record id="ptal_educalife_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_edutalife"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_temporal')])]"/>
+        </record>
+        <record id="ptal_educalife_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_edutalife"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [
+                ref('val_ad_pago_sa_invalidez'),
+                ref('val_ad_garantia_fallecimiento'),
+                ref('val_ad_garantia_primas_invalidez'),
+                ref('val_ad_muerte_accidental'),
+                ref('val_ad_muerte_accidental_colectivo'),
+                ref('val_ad_graves_enfermedades'),
+                ref('val_ad_gastos_funerarios'),
+                ref('val_ad_enfermedad_terminal'),
+            ])]"/>
+        </record>
+
+        <!-- PerfectLife / TotalLife / TempoLife / TempoLife GP-RP
+             (comparten catálogo según el PPT) -->
+        <record id="ptal_perfectlife_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_perfectlife"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_generica')])]"/>
+        </record>
+        <record id="ptal_perfectlife_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_perfectlife"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [
+                ref('val_ad_exencion_primas_invalidez'),
+                ref('val_ad_pago_anticipado_invalidez'),
+                ref('val_ad_muerte_accidental'),
+                ref('val_ad_muerte_accidental_po'),
+                ref('val_ad_muerte_accidental_colectivo'),
+                ref('val_ad_graves_enfermedades'),
+                ref('val_ad_gastos_funerarios'),
+            ])]"/>
+        </record>
+
+        <record id="ptal_totallife_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_totallife"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_generica')])]"/>
+        </record>
+        <record id="ptal_totallife_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_totallife"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [
+                ref('val_ad_exencion_primas_invalidez'),
+                ref('val_ad_pago_anticipado_invalidez'),
+                ref('val_ad_muerte_accidental'),
+                ref('val_ad_muerte_accidental_po'),
+                ref('val_ad_muerte_accidental_colectivo'),
+                ref('val_ad_graves_enfermedades'),
+                ref('val_ad_gastos_funerarios'),
+            ])]"/>
+        </record>
+
+        <record id="ptal_tempolife_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_tempolife"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_generica')])]"/>
+        </record>
+        <record id="ptal_tempolife_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_tempolife"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [
+                ref('val_ad_exencion_primas_invalidez'),
+                ref('val_ad_pago_anticipado_invalidez'),
+                ref('val_ad_muerte_accidental'),
+                ref('val_ad_muerte_accidental_po'),
+                ref('val_ad_muerte_accidental_colectivo'),
+                ref('val_ad_graves_enfermedades'),
+                ref('val_ad_gastos_funerarios'),
+            ])]"/>
+        </record>
+
+        <!-- TempoLife GP/RP: mismo linaje TempoLife (asunción de familia). -->
+        <record id="ptal_tempolife_gprp_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_tempolife_gprp"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_generica')])]"/>
+        </record>
+        <record id="ptal_tempolife_gprp_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_tempolife_gprp"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [
+                ref('val_ad_exencion_primas_invalidez'),
+                ref('val_ad_pago_anticipado_invalidez'),
+                ref('val_ad_muerte_accidental'),
+                ref('val_ad_muerte_accidental_po'),
+                ref('val_ad_muerte_accidental_colectivo'),
+                ref('val_ad_graves_enfermedades'),
+                ref('val_ad_gastos_funerarios'),
+            ])]"/>
+        </record>
+
+        <!-- MedicaLife (GMM): solo opcionales; sin básica (la base es GMM). -->
+        <record id="ptal_medicalife_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_gmm_medicalife"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [
+                ref('val_ad_metdental'),
+                ref('val_ad_vision'),
+                ref('val_ad_emergencia_extranjero'),
+                ref('val_ad_enf_catastrofica_extranjero'),
+                ref('val_ad_reduccion_deducible'),
+                ref('val_ad_estudiantes_extranjero'),
+                ref('val_ad_proteccion_garantizada'),
+            ])]"/>
+        </record>
+
+        <!-- Primordial (GMM): PPT incompleto → única opcional documentada. -->
+        <record id="ptal_primordial_adicional" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_gmm_primordial"/>
+            <field name="attribute_id" ref="attr_cobertura_adicional"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_ad_suma_asegurada_adicional')])]"/>
+        </record>
+
+        <!-- Productos Vida sembrados SIN catálogo documentado en el PPT
+             (Universales, Perfect Life, Vida Pagos, Metalife Retiro,
+             Metalife tu Futuro): se asigna solo la básica universal
+             "Fallecimiento" para que el selector funcione. Las adicionales se
+             cargarán cuando MetLife entregue su catálogo (no inventar). -->
+        <record id="ptal_universales_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_universales"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_fallecimiento')])]"/>
+        </record>
+        <record id="ptal_perfect_life_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_perfect_life"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_fallecimiento')])]"/>
+        </record>
+        <record id="ptal_vida_pagos_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_vida_pagos"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_fallecimiento')])]"/>
+        </record>
+        <record id="ptal_metalife_retiro_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_metalife_retiro"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_fallecimiento')])]"/>
+        </record>
+        <record id="ptal_metalife_tu_futuro_basica" model="product.template.attribute.line">
+            <field name="product_tmpl_id" ref="producto_metlife_metalife_tu_futuro"/>
+            <field name="attribute_id" ref="attr_cobertura_basica"/>
+            <field name="value_ids" eval="[(6, 0, [ref('val_basica_fallecimiento')])]"/>
+        </record>
+
+    </data>
+</odoo>

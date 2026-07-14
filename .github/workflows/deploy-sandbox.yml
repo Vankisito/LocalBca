@@ -1,0 +1,40 @@
+name: Deploy to Sandbox
+
+on:
+  push:
+    branches: [desarrollo]
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy BCA_Seguros a Sandbox
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: sandbox-odoo.habitatdigital.net
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /tmp
+            rm -rf GpoBCA_Seguros
+            git clone -b desarrollo git@github.com:HabitatDigitalCo/GpoBCA_Seguros.git
+            if [ ! -f "GpoBCA_Seguros/BCA_Seguros/__manifest__.py" ]; then
+              echo "ERROR: BCA_Seguros/__manifest__.py no encontrado"
+              exit 1
+            fi
+            rm -rf /opt/odoo/addons/BCA_Seguros
+            mv GpoBCA_Seguros/BCA_Seguros /opt/odoo/addons/BCA_Seguros
+            rm -rf /tmp/GpoBCA_Seguros
+            docker restart odoo_golden
+            sleep 45
+            docker exec odoo_golden odoo \
+              -u BCA_Seguros \
+              -d sandbox_bca1 \
+              --stop-after-init \
+              --no-http
+            docker exec odoo_golden grep -i "BCA_Seguros" /var/log/odoo/odoo.log | tail -5
+
+      - name: Notificar éxito
+        if: success()
+        run: echo "✅ BCA_Seguros desplegado a Sandbox correctamente"

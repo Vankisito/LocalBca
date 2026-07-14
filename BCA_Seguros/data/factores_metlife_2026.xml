@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Factores PCA MetLife 2026
+         17 registros: 14 Vida (7 productos × 2 monedas) + 3 GMM
+
+         Fuente: Tabla de PCA MetLife vigente desde 2026-01-01.
+         base.MXN y base.USD deben estar activas en res.currency antes de instalar.
+
+         Productos Vida con factor asignado en esta tabla:
+           Universales, TempoLife, TempoLife GP/RP, TotalLife, EducaLife,
+           PerfectLife, Horizonte.
+         Productos Vida sin factor todavía (definidos en productos_metlife.xml):
+           Perfect Life, Vida Pagos, Metalife Retiro, Metalife tu Futuro.
+         Cuando se publique su factor, agregar el registro aquí o crear desde UI
+         (editable por Director Comercial y Director General — ver ACL).
+
+         GMM: los 3 factores discriminan por coaseguro/deducible, no por producto
+         (sin producto_ids).
+
+         noupdate="1": protege contra sobreescritura en odoo-bin -u. -->
+    <data noupdate="1">
+
+        <!-- ============================================================
+             VIDA — 14 registros (7 productos × 2 monedas)
+             ============================================================ -->
+
+        <record id="factor_metlife_universales_mxn" model="bca.factor.pca">
+            <field name="name">MetLife Vida — Universales MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_universales')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_universales_usd" model="bca.factor.pca">
+            <field name="name">MetLife Vida — Universales USD 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_universales')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_tempolife_mxn" model="bca.factor.pca">
+            <field name="name">MetLife Vida — TempoLife MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_tempolife')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_tempolife_usd" model="bca.factor.pca">
+            <field name="name">MetLife Vida — TempoLife USD 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_tempolife')])]"/>
+            <field name="factor">0.8</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_tempolife_gprp_mxn" model="bca.factor.pca">
+            <field name="name">MetLife Vida — TempoLife GP/RP MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_tempolife_gprp')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_tempolife_gprp_usd" model="bca.factor.pca">
+            <field name="name">MetLife Vida — TempoLife GP/RP USD 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_tempolife_gprp')])]"/>
+            <field name="factor">0.8</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_totallife_mxn" model="bca.factor.pca">
+            <field name="name">MetLife Vida — TotalLife MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_totallife')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_totallife_usd" model="bca.factor.pca">
+            <field name="name">MetLife Vida — TotalLife USD 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_totallife')])]"/>
+            <field name="factor">0.8</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_edutalife_mxn" model="bca.factor.pca">
+            <field name="name">MetLife Vida — EducaLife MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_edutalife')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_edutalife_usd" model="bca.factor.pca">
+            <field name="name">MetLife Vida — EducaLife USD 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_edutalife')])]"/>
+            <field name="factor">0.7</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_perfectlife_mxn" model="bca.factor.pca">
+            <field name="name">MetLife Vida — PerfectLife MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_perfectlife')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_perfectlife_usd" model="bca.factor.pca">
+            <field name="name">MetLife Vida — PerfectLife USD 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_perfectlife')])]"/>
+            <field name="factor">0.7</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_horizonte_mxn" model="bca.factor.pca">
+            <field name="name">MetLife Vida — Horizonte MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_horizonte')])]"/>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_horizonte_usd" model="bca.factor.pca">
+            <field name="name">MetLife Vida — Horizonte USD 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">vida</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="producto_ids" eval="[(6, 0, [ref('BCA_Seguros.producto_metlife_horizonte')])]"/>
+            <field name="factor">0.7</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <!-- ============================================================
+             GMM — 3 registros
+             Sin producto_ids: aplica a cualquier producto GMM MetLife.
+             Lógica de selección del calculador (Etapa 7):
+               coaseguro >= 10% y deducible >= 29,000 MXN → factor 120%
+               coaseguro >= 10% y deducible < 29,000 MXN  → factor 100%
+               coaseguro <= 5%  (sin importar deducible)  → factor 0%
+             ============================================================ -->
+
+        <record id="factor_metlife_gmm_coas10_ded29k" model="bca.factor.pca">
+            <field name="name">MetLife GMM — Coaseguro 10% / Ded ≥29,000 MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">gmm</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="coaseguro_min">10.0</field>
+            <field name="deducible_min">29000.0</field>
+            <field name="factor">1.2</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_gmm_coas10_ded0" model="bca.factor.pca">
+            <field name="name">MetLife GMM — Coaseguro 10% / Ded &lt;29,000 MXN 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">gmm</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="coaseguro_min">10.0</field>
+            <field name="deducible_min">0.0</field>
+            <field name="factor">1.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+        <record id="factor_metlife_gmm_coas0_ded0" model="bca.factor.pca">
+            <field name="name">MetLife GMM — Coaseguro ≤5% / PCA 0% 2026</field>
+            <field name="aseguradora_id" ref="BCA_Seguros.partner_metlife"/>
+            <field name="ramo">gmm</field>
+            <field name="currency_id" ref="base.MXN"/>
+            <field name="coaseguro_min">0.0</field>
+            <field name="deducible_min">0.0</field>
+            <field name="factor">0.0</field>
+            <field name="vigencia_desde">2026-01-01</field>
+            <field name="activo" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

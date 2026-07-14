@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_poliza_list" model="ir.ui.view">
+        <field name="name">bca.poliza.list</field>
+        <field name="model">bca.poliza</field>
+        <field name="arch" type="xml">
+            <list string="Pólizas"
+                  decoration-info="estado == 'borrador'"
+                  decoration-success="estado == 'activa'"
+                  decoration-warning="estado == 'vencida'"
+                  decoration-muted="estado == 'cancelada'">
+                <field name="name"/>
+                <field name="aseguradora_id"/>
+                <field name="producto_id"/>
+                <field name="ramo" optional="show"/>
+                <field name="agente_id"/>
+                <field name="promotoria_id" optional="hide"/>
+                <field name="contratante_id" optional="hide"/>
+                <field name="fecha_inicio"/>
+                <field name="fecha_fin" optional="hide"/>
+                <field name="periodicidad" optional="hide"/>
+                <field name="prima_anual" widget="monetary" sum="Total"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="pagado_hasta" optional="show"/>
+                <field name="estatus_pago" widget="badge" optional="show"
+                       decoration-success="estatus_pago == 'al_corriente'"
+                       decoration-danger="estatus_pago == 'vencido'"
+                       decoration-warning="estatus_pago == 'suspendido'"/>
+                <field name="estado" widget="badge"
+                       decoration-info="estado == 'borrador'"
+                       decoration-success="estado == 'activa'"
+                       decoration-warning="estado == 'vencida'"
+                       decoration-danger="estado == 'cancelada'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_poliza_form" model="ir.ui.view">
+        <field name="name">bca.poliza.form</field>
+        <field name="model">bca.poliza</field>
+        <field name="arch" type="xml">
+            <form string="Póliza">
+                <header>
+                    <button name="action_confirmar"
+                            type="object"
+                            string="Confirmar"
+                            class="oe_highlight"
+                            invisible="estado != 'borrador'"/>
+                    <button name="action_generar_siguiente_anualidad"
+                            type="object"
+                            string="Generar siguiente anualidad"
+                            invisible="estado != 'activa'"/>
+                    <button name="action_cancelar"
+                            type="object"
+                            string="Cancelar"
+                            confirm="Vas a cancelar esta póliza. Los recibos pagados se mantienen pero no se generarán más cobranzas. ¿Continuar?"
+                            invisible="estado == 'cancelada'"/>
+                    <field name="estado" widget="statusbar"
+                           statusbar_visible="borrador,activa,vencida,cancelada"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Cancelada"
+                            bg_color="bg-danger"
+                            invisible="estado != 'cancelada'"/>
+                    <widget name="web_ribbon" title="Vencida"
+                            bg_color="bg-warning"
+                            invisible="estado != 'vencida'"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_recibos"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o">
+                            <field name="recibo_count" widget="statinfo"
+                                   string="Recibos"/>
+                        </button>
+                        <button name="action_view_cambios_agente"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-history"
+                                invisible="cambio_agente_count == 0">
+                            <field name="cambio_agente_count" widget="statinfo"
+                                   string="Cambios Agente"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Número de Póliza"/>
+                        <h1>
+                            <field name="name" placeholder="Ej: MET-2026-00001"
+                                   readonly="estado != 'borrador'"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Aseguradora y producto">
+                            <!-- Cascada Aseguradora → Ramo → Productos: el
+                                 domain de producto_id se filtra por la
+                                 aseguradora y el ramo elegidos. -->
+                            <field name="aseguradora_id"
+                                   options="{'no_create': True}"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="ramo"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="producto_id"
+                                   options="{'no_create': True}"
+                                   domain="[('bca_es_producto_seguro', '=', True), ('bca_aseguradora_id', '=', aseguradora_id), ('bca_ramo', '=', ramo)]"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="plan" readonly="estado != 'borrador'"/>
+                            <field name="poliza_origen_id"
+                                   options="{'no_create': True}"
+                                   readonly="estado != 'borrador'"/>
+                        </group>
+                        <group string="Asignación organizacional">
+                            <field name="contratante_id"
+                                   options="{'no_create_edit': True}"/>
+                            <field name="asegurado_id"
+                                   options="{'no_create_edit': True}"
+                                   invisible="ramo not in ('vida', 'gmm')"/>
+                            <field name="agente_id"
+                                   options="{'no_create': True}"/>
+                            <field name="promotoria_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Vigencia y periodicidad">
+                            <field name="fecha_emision"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="fecha_inicio"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="fecha_fin"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="periodicidad"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="conducto_id"
+                                   options="{'no_create': True}"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="pagado_hasta" readonly="1"/>
+                            <field name="pagado_hasta_inicial"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="estatus_pago" widget="badge"
+                                   decoration-success="estatus_pago == 'al_corriente'"
+                                   decoration-danger="estatus_pago == 'vencido'"
+                                   decoration-warning="estatus_pago == 'suspendido'"
+                                   readonly="1"/>
+                            <field name="pago_suspendido"
+                                   widget="boolean_toggle"/>
+                        </group>
+                        <group string="Importes">
+                            <field name="currency_id"
+                                   options="{'no_create': True}"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="prima_anual" widget="monetary"
+                                   readonly="estado != 'borrador'"/>
+                            <field name="prima_fraccionada" widget="monetary"
+                                   readonly="estado != 'borrador'"
+                                   help="Importe a pagar en cada recibo según la periodicidad (prima anual repartida en los pagos del año)."/>
+                            <field name="recargo_fraccionamiento" widget="monetary"
+                                   readonly="estado != 'borrador'"
+                                   help="Sobrecosto que la aseguradora aplica por pagar fraccionado en vez de anual."/>
+                            <field name="recargo_fijo" widget="monetary"
+                                   readonly="estado != 'borrador'"
+                                   help="Cargo fijo adicional por recibo (gastos de expedición/administración)."/>
+                            <field name="suma_asegurada" widget="monetary"
+                                   readonly="estado != 'borrador'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="atributos_vida" string="Atributos Vida"
+                              invisible="ramo != 'vida'">
+                            <group>
+                                <field name="tipo_cobertura"/>
+                                <field name="temporalidad_anios"/>
+                                <field name="es_aportacion_adicional"
+                                       widget="boolean_toggle"/>
+                            </group>
+                            <group string="Coberturas">
+                                <field name="cobertura_basica_attr_id" invisible="1"/>
+                                <field name="cobertura_adicional_attr_id" invisible="1"/>
+                                <field name="cobertura_basica_id"
+                                       options="{'no_create': True}"/>
+                                <field name="cobertura_adicional_ids"
+                                       widget="many2many_tags"
+                                       options="{'no_create': True}"/>
+                                <field name="coberturas_adicionales"/>
+                            </group>
+                        </page>
+                        <page name="beneficiarios" string="Beneficiarios"
+                              invisible="ramo != 'vida'">
+                            <field name="beneficiario_ids">
+                                <list editable="bottom">
+                                    <field name="beneficiario_id"
+                                           options="{'no_create_edit': True}"/>
+                                    <field name="parentesco"/>
+                                    <field name="porcentaje" sum="Total %"/>
+                                </list>
+                            </field>
+                            <group>
+                                <field name="beneficiarios_porcentaje_total"/>
+                            </group>
+                        </page>
+                        <page name="atributos_gmm" string="Atributos GMM"
+                              invisible="ramo != 'gmm'">
+                            <group>
+                                <group string="Coberturas médicas">
+                                    <field name="deducible" widget="monetary"/>
+                                    <field name="coaseguro"/>
+                                    <field name="nivel_hospitalario"/>
+                                    <field name="bca_sub_ramo_codigo"/>
+                                </group>
+                                <group string="Importes GMM">
+                                    <field name="iva" widget="monetary"/>
+                                </group>
+                            </group>
+                            <group string="Coberturas Adicionales">
+                                <field name="cobertura_adicional_ids"
+                                       widget="many2many_tags"
+                                       options="{'no_create': True}"/>
+                                <field name="coberturas_adicionales"/>
+                            </group>
+                            <!-- Asegurados adicionales (dependientes): reúsa el
+                                 One2many beneficiario_ids sin la columna porcentaje
+                                 (no aplica reparto en GMM). La fecha de nacimiento
+                                 vive en la línea. -->
+                            <group string="Asegurados Adicionales">
+                                <field name="beneficiario_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="beneficiario_id"
+                                               string="Asegurado"
+                                               options="{'no_create_edit': True}"/>
+                                        <field name="parentesco"/>
+                                        <field name="fecha_nacimiento"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                        <page name="recibos" string="Recibos">
+                            <field name="recibo_ids" readonly="1">
+                                <list>
+                                    <field name="numero_recibo"/>
+                                    <field name="fecha_desde"/>
+                                    <field name="fecha_hasta"/>
+                                    <field name="prima_neta"
+                                           widget="monetary" sum="Total"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="pca_currency_id" column_invisible="True"/>
+                                    <field name="fecha_pago"/>
+                                    <field name="pca_aplicada"
+                                           widget="monetary" sum="PCA"/>
+                                    <field name="estado" widget="badge"
+                                           decoration-warning="estado == 'pendiente'"
+                                           decoration-success="estado == 'pagado'"
+                                           decoration-muted="estado == 'cancelado'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="historial_agentes" string="Historial de Agentes"
+                              invisible="cambio_agente_count == 0">
+                            <field name="cambio_agente_ids" readonly="1">
+                                <list>
+                                    <field name="fecha_cambio"/>
+                                    <field name="agente_anterior_id"/>
+                                    <field name="promotoria_anterior_id"/>
+                                    <field name="agente_nuevo_id"/>
+                                    <field name="promotoria_nueva_id"/>
+                                    <field name="motivo"/>
+                                    <field name="usuario_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_poliza_search" model="ir.ui.view">
+        <field name="name">bca.poliza.search</field>
+        <field name="model">bca.poliza</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Pólizas">
+                <field name="name" string="Número"/>
+                <field name="aseguradora_id"/>
+                <field name="producto_id"/>
+                <field name="agente_id"/>
+                <field name="promotoria_id"/>
+                <field name="contratante_id"/>
+                <separator/>
+                <filter name="filter_borrador" string="Borrador"
+                        domain="[('estado', '=', 'borrador')]"/>
+                <filter name="filter_activas" string="Activas"
+                        domain="[('estado', '=', 'activa')]"/>
+                <filter name="filter_vencidas" string="Vencidas"
+                        domain="[('estado', '=', 'vencida')]"/>
+                <filter name="filter_canceladas" string="Canceladas"
+                        domain="[('estado', '=', 'cancelada')]"/>
+                <separator/>
+                <filter name="filter_vida" string="Vida"
+                        domain="[('ramo', '=', 'vida')]"/>
+                <filter name="filter_gmm" string="GMM"
+                        domain="[('ramo', '=', 'gmm')]"/>
+                <filter name="filter_autos" string="Autos"
+                        domain="[('ramo', '=', 'autos')]"/>
+                <group>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_ramo" string="Ramo"
+                            context="{'group_by': 'ramo'}"/>
+                    <filter name="group_agente" string="Agente"
+                            context="{'group_by': 'agente_id'}"/>
+                    <filter name="group_promotoria" string="Promotoría"
+                            context="{'group_by': 'promotoria_id'}"/>
+                    <filter name="group_estado" string="Estado"
+                            context="{'group_by': 'estado'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_poliza" model="ir.actions.act_window">
+        <field name="name">Pólizas</field>
+        <field name="res_model">bca.poliza</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="BCA_Seguros.view_poliza_search"/>
+        <field name="context">{'search_default_filter_activas': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Creá la primera póliza
+            </p>
+            <p>
+                Las pólizas BCA gestionan toda la vida del contrato: vigencia,
+                periodicidad, recibos y cobranza. Tras confirmar una póliza
+                en borrador, el sistema genera automáticamente el plan de pagos
+                según la periodicidad seleccionada.
+            </p>
+        </field>
+    </record>
+
+</odoo>

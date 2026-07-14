@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="BCA_Seguros.Dashboard">
+        <div class="o_bca_dashboard">
+
+            <t t-if="state.loading">
+                <div class="o_bca_loading">
+                    <i class="fa fa-circle-o-notch fa-spin"/> Cargando tablero…
+                </div>
+            </t>
+
+            <t t-else="">
+                <div class="o_bca_header">
+                    <h1 class="o_bca_title">Tablero HD Seguros</h1>
+                    <span class="o_bca_moneda" t-esc="'Cifras en ' + state.data.moneda"/>
+                </div>
+
+                <div class="o_bca_grid">
+
+                    <!-- ============ Tarjeta 1 — Cartera de Pólizas ============ -->
+                    <section class="o_bca_card">
+                        <header class="o_bca_card_head">
+                            <span class="o_bca_card_kicker">Cartera de Pólizas</span>
+                        </header>
+                        <div class="o_bca_hero">
+                            <button class="o_bca_figure o_bca_figure--primary"
+                                    t-on-click="() => this.open('cartera_activas')">
+                                <span class="o_bca_num" t-esc="int(state.data.cartera.activas)"/>
+                                <span class="o_bca_lbl">Activas</span>
+                            </button>
+                            <div class="o_bca_hero_aside">
+                                <div class="o_bca_money" t-esc="money(state.data.cartera.suma_asegurada)"/>
+                                <div class="o_bca_money_lbl">Suma asegurada</div>
+                            </div>
+                        </div>
+                        <div class="o_bca_chips">
+                            <button class="o_bca_chip"
+                                    t-on-click="() => this.open('cartera_borrador')">
+                                Borrador <b t-esc="int(state.data.cartera.borrador)"/>
+                            </button>
+                            <button class="o_bca_chip o_bca_chip--danger"
+                                    t-on-click="() => this.open('cartera_vencidas')">
+                                Vencidas <b t-esc="int(state.data.cartera.vencidas)"/>
+                            </button>
+                        </div>
+                        <div class="o_bca_chart_wrap">
+                            <canvas t-ref="chart_cartera"/>
+                        </div>
+                        <ul class="o_bca_ramos">
+                            <li><span>Vida</span><b t-esc="int(state.data.cartera.por_ramo.vida)"/></li>
+                            <li><span>GMM</span><b t-esc="int(state.data.cartera.por_ramo.gmm)"/></li>
+                            <li><span>Autos</span><b t-esc="int(state.data.cartera.por_ramo.autos)"/></li>
+                        </ul>
+                    </section>
+
+                    <!-- ============ Tarjeta 2 — Cobranza Diaria ============ -->
+                    <section class="o_bca_card">
+                        <header class="o_bca_card_head">
+                            <span class="o_bca_card_kicker">Cobranza Diaria</span>
+                        </header>
+                        <div class="o_bca_hero">
+                            <button class="o_bca_figure o_bca_figure--primary"
+                                    t-on-click="() => this.open('cobranza_pendientes')">
+                                <span class="o_bca_num" t-esc="int(state.data.cobranza.pendientes_num)"/>
+                                <span class="o_bca_lbl">Pendientes</span>
+                            </button>
+                            <div class="o_bca_hero_aside">
+                                <div class="o_bca_money" t-esc="money(state.data.cobranza.pendientes_monto)"/>
+                                <div class="o_bca_money_lbl">Monto pendiente</div>
+                            </div>
+                        </div>
+                        <div class="o_bca_chips">
+                            <button class="o_bca_chip o_bca_chip--danger"
+                                    t-on-click="() => this.open('cobranza_vencidos')">
+                                Vencidos <b t-esc="int(state.data.cobranza.vencidos_num)"/>
+                                · <t t-esc="money(state.data.cobranza.vencidos_monto)"/>
+                            </button>
+                            <button class="o_bca_chip o_bca_chip--ok"
+                                    t-on-click="() => this.open('cobranza_cobrado_mes')">
+                                Cobrado mes <b t-esc="money(state.data.cobranza.cobrado_mes)"/>
+                            </button>
+                        </div>
+                        <div class="o_bca_chart_wrap">
+                            <canvas t-ref="chart_cobranza"/>
+                        </div>
+                        <div class="o_bca_fifo" t-if="state.data.cobranza.proximo_fifo.poliza">
+                            Próximo (FIFO): <b t-esc="state.data.cobranza.proximo_fifo.poliza"/>
+                            · vence <t t-esc="date(state.data.cobranza.proximo_fifo.fecha_fin)"/>
+                        </div>
+                    </section>
+
+                    <!-- ============ Tarjeta 3 — Prima Computable (PCA) ============ -->
+                    <section class="o_bca_card">
+                        <header class="o_bca_card_head">
+                            <span class="o_bca_card_kicker">Prima Computable (PCA)</span>
+                        </header>
+                        <div class="o_bca_hero">
+                            <div class="o_bca_hero_aside">
+                                <div class="o_bca_money o_bca_money--big" t-esc="money(state.data.pca.acumulada_anio)"/>
+                                <div class="o_bca_money_lbl">Acumulada del año</div>
+                            </div>
+                            <div class="o_bca_hero_aside">
+                                <div class="o_bca_money" t-esc="money(state.data.pca.del_mes)"/>
+                                <div class="o_bca_money_lbl">Del mes</div>
+                            </div>
+                        </div>
+                        <div class="o_bca_chips">
+                            <button class="o_bca_chip o_bca_chip--ok"
+                                    t-on-click="() => this.open('pca_computables')">
+                                Computables <b t-esc="int(state.data.pca.computables)"/>
+                            </button>
+                            <button class="o_bca_chip"
+                                    t-on-click="() => this.open('pca_exclusiones')">
+                                Exclusiones <b t-esc="int(state.data.pca.exclusiones)"/>
+                            </button>
+                        </div>
+                        <div class="o_bca_chart_wrap">
+                            <canvas t-ref="chart_pca"/>
+                        </div>
+                        <div class="o_bca_factores">
+                            Factores cargados:
+                            <b t-esc="int(state.data.pca.factores_cargados)"/> /
+                            <t t-esc="int(state.data.pca.factores_esperados)"/>
+                        </div>
+                    </section>
+
+                    <!-- ============ Tarjeta 4 — Vigencia y Cobertura ============ -->
+                    <section class="o_bca_card">
+                        <header class="o_bca_card_head">
+                            <span class="o_bca_card_kicker">Vigencia y Cobertura</span>
+                        </header>
+                        <div class="o_bca_semaforos">
+                            <button class="o_bca_semaforo o_bca_semaforo--ok"
+                                    t-on-click="() => this.open('vigencia_al_dia')">
+                                <span class="o_bca_num" t-esc="int(state.data.vigencia.al_dia)"/>
+                                <span class="o_bca_lbl">Al día</span>
+                            </button>
+                            <button class="o_bca_semaforo o_bca_semaforo--warn"
+                                    t-on-click="() => this.open('vigencia_por_caer')">
+                                <span class="o_bca_num" t-esc="int(state.data.vigencia.por_caer)"/>
+                                <span class="o_bca_lbl">Por caer (15 d)</span>
+                            </button>
+                            <button class="o_bca_semaforo o_bca_semaforo--danger"
+                                    t-on-click="() => this.open('vigencia_sin_cobertura')">
+                                <span class="o_bca_num" t-esc="int(state.data.vigencia.sin_cobertura)"/>
+                                <span class="o_bca_lbl">Sin cobertura</span>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- ============ Tarjeta 5 — Últimas Importaciones ============ -->
+                    <section class="o_bca_card">
+                        <header class="o_bca_card_head">
+                            <span class="o_bca_card_kicker">Últimas Importaciones</span>
+                        </header>
+                        <button class="o_bca_import_head"
+                                t-on-click="() => this.open('importaciones')">
+                            <div class="o_bca_import_file" t-esc="state.data.importaciones.ultimo_archivo or 'Sin importaciones'"/>
+                            <div class="o_bca_import_date" t-esc="date(state.data.importaciones.ultima_fecha)"/>
+                        </button>
+                        <div class="o_bca_tiles">
+                            <div class="o_bca_tile o_bca_tile--ok">
+                                <b t-esc="int(state.data.importaciones.aplicadas)"/>
+                                <span>Aplicadas</span>
+                            </div>
+                            <div class="o_bca_tile o_bca_tile--warn">
+                                <b t-esc="int(state.data.importaciones.no_encontradas)"/>
+                                <span>No encontradas</span>
+                            </div>
+                            <div class="o_bca_tile">
+                                <b t-esc="int(state.data.importaciones.anuladas)"/>
+                                <span>Anuladas</span>
+                            </div>
+                            <div class="o_bca_tile o_bca_tile--danger">
+                                <b t-esc="int(state.data.importaciones.errores)"/>
+                                <span>Errores</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ============ Tarjeta 6 — Productividad de Agentes ============ -->
+                    <section class="o_bca_card">
+                        <header class="o_bca_card_head">
+                            <span class="o_bca_card_kicker">Productividad de Agentes</span>
+                        </header>
+                        <div class="o_bca_chips">
+                            <button class="o_bca_chip o_bca_chip--ok"
+                                    t-on-click="() => this.open('agentes_con_licencia')">
+                                Con licencia <b t-esc="int(state.data.agentes.con_licencia)"/>
+                            </button>
+                            <button class="o_bca_chip"
+                                    t-on-click="() => this.open('agentes_prospectos')">
+                                Prospectos <b t-esc="int(state.data.agentes.prospectos)"/>
+                            </button>
+                        </div>
+                        <div class="o_bca_chart_wrap">
+                            <canvas t-ref="chart_agentes"/>
+                        </div>
+                        <div class="o_bca_empty"
+                             t-if="!state.data.agentes.pca_por_promotoria.length">
+                            Sin PCA registrada por promotoría.
+                        </div>
+                    </section>
+
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>
