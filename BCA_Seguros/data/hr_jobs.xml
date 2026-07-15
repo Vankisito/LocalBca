@@ -12,14 +12,18 @@
             <field name="description">Reclutamiento de agentes de seguros para una promotoría afiliada. Requiere especificar la promotoría destino en el formulario del candidato.</field>
         </record>
 
-        <!-- Puesto interno genérico (BUG-002, D-20/D-23): agrupa Auxiliar
-             Administrativa, Reclutador, Gerencial y cualquier otro puesto no
-             comercial. Sin job_ids en las etapas BCA: usa el embudo NATIVO de
-             Odoo (New…Contract Signed) y cierra con su hired nativo, sin
-             Fase A/B, sin cédula, sin partner agente ni puente. -->
+        <!-- Puesto interno genérico (BUG-002, D-20/D-23; alcance revisado por
+             D-24/BUG-020/BUG-021): agrupa Auxiliar Administrativa, Reclutador,
+             Gerencial y cualquier otro puesto no comercial. Comparte SOLO
+             Recibido…Cena (seq 1-4) con Agentes/Promotorías — "Evaluación PDA"
+             y "Acuerdo de Arranque" (seq 5-6) son exclusivas de las figuras
+             comerciales, no aplican a un puesto interno — y cierra con la
+             etapa hired NATIVA de Odoo ("Contract Signed"); no entra a Fase B
+             (clave/cédula) ni dispara creación de partner agente/promotoría ni
+             de empleado. -->
         <record id="job_interno" model="hr.job">
             <field name="name">Puesto Interno</field>
-            <field name="description">Puesto interno (Auxiliar Administrativa, Reclutador, Gerencial, etc.). Usa el embudo nativo de Reclutamiento de Odoo; no recorre el embudo comercial de Agentes/Promotores.</field>
+            <field name="description">Puesto interno (Auxiliar Administrativa, Reclutador, Gerencial, etc.). Recorre Recibido…Cena del embudo BCA (D-24) y cierra con la etapa nativa hired de Odoo ("Contract Signed"); no entra a "Evaluación PDA"/"Acuerdo de Arranque" ni a la Fase B comercial (clave/cédula), ni dispara lógica de creación de partner/puente/agente.</field>
         </record>
 
     </data>

@@ -303,6 +303,45 @@ class HrApplicant(models.Model):
             ]
         return [label for field_name, label in requeridos if not self[field_name]]
 
+    @api.constrains('stage_id', 'bca_rfc', 'bca_curp', 'email_from')
+    def _check_habilitacion_datos_puesto_interno(self) -> None:
+        """L2-interno (BUG-020): Puesto Interno no llega al hired nativo sin datos.
+
+        Exclusivo de `job_interno` (D-24, revisión parcial de D-20/D-23); NO
+        modifica `_check_habilitacion_datos` (ese sigue exclusivo de las figuras
+        comerciales). La etapa de corte es cualquiera con `hired_stage=True`
+        (hoy la nativa "Contract Signed"), resuelta por el campo `hired_stage`
+        de la propia etapa, nunca por un xmlid hardcodeado de `hr_recruitment`.
+        """
+        job_interno = self.env.ref(
+            'BCA_Seguros.job_interno', raise_if_not_found=False,
+        )
+        if not job_interno:
+            return
+        for applicant in self:
+            if (applicant.job_id == job_interno and applicant.stage_id
+                    and applicant.stage_id.hired_stage):
+                faltantes = applicant._bca_datos_habilitacion_faltantes_interno()
+                if faltantes:
+                    raise ValidationError(_(
+                        'No se puede habilitar al candidato "%(nombre)s" en '
+                        '"%(etapa)s": faltan datos: %(faltantes)s.'
+                    ) % {
+                        'nombre': applicant.partner_name or applicant.display_name,
+                        'etapa': applicant.stage_id.name,
+                        'faltantes': ', '.join(faltantes),
+                    })
+
+    def _bca_datos_habilitacion_faltantes_interno(self) -> list:
+        """BUG-020: RFC, CURP y correo mínimos para "Puesto Interno" hired."""
+        self.ensure_one()
+        requeridos = [
+            ('bca_rfc', _('RFC')),
+            ('bca_curp', _('CURP')),
+            ('email_from', _('Correo electrónico')),
+        ]
+        return [label for field_name, label in requeridos if not self[field_name]]
+
     def write(self, vals: dict) -> bool:
         """Dispara la conversión por CRUCE de umbral de etapa (3 fases).
 

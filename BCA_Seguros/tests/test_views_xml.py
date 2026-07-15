@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from lxml import etree
+
 from odoo.tests.common import TransactionCase
 from odoo.tests import tagged
 
@@ -39,6 +41,31 @@ class TestViewsXml(TransactionCase):
         self._validate('BCA_Seguros.view_recibo_list')
         self._validate('BCA_Seguros.view_recibo_form')
         self._validate('BCA_Seguros.view_recibo_search')
+
+    def test_bug013_recibo_ids_editable_sin_crear_ni_borrar(self) -> None:
+        """BUG-013: recibo_ids en la pestaña "Recibos" de la póliza no debe
+        llevar readonly="1" fijo (el diálogo embebido debe respetar el
+        readonly por estado de view_recibo_form para que "Registrar Pago"
+        funcione), pero su lista sí debe bloquear alta/baja de recibos
+        sueltos (create="0"/delete="0": los recibos se generan por el plan
+        de pagos, no se crean a mano desde esta pestaña).
+        """
+        view = self.env.ref('BCA_Seguros.view_poliza_form')
+        result = self.env[view.model].get_view(view_id=view.id, view_type='form')
+        arch = etree.fromstring(result['arch'])
+        field_node = arch.find('.//field[@name="recibo_ids"]')
+        self.assertIsNotNone(field_node, 'recibo_ids no está en view_poliza_form')
+        self.assertNotEqual(
+            field_node.get('readonly'), '1',
+            'recibo_ids no debe llevar readonly="1" fijo (BUG-013): bloquea '
+            'el diálogo embebido y "Registrar Pago" nunca puede completarse.',
+        )
+        list_node = field_node.find('list')
+        self.assertIsNotNone(list_node, 'recibo_ids debe declarar una sub-vista <list>')
+        self.assertEqual(list_node.get('create'), '0',
+                          'La lista de recibos de la póliza no debe permitir crear.')
+        self.assertEqual(list_node.get('delete'), '0',
+                          'La lista de recibos de la póliza no debe permitir borrar.')
 
     def test_bitacora_views(self) -> None:
         self._validate('BCA_Seguros.view_bitacora_importacion_list')

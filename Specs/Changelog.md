@@ -4,6 +4,102 @@
 
 ---
 
+## Sesión 2026-07-15 (b) — Cobranza/Pólizas: "Registrar Pago" utilizable desde la pestaña Recibos (BUG-013) · `19.0.1.8.4`
+
+### Qué se hizo
+Se resuelve **BUG-013**: al abrir un recibo desde la pestaña "Recibos" de una póliza, el
+diálogo se abría en modo solo lectura y "Registrar Pago" no servía de nada. Causa: el
+one2many `recibo_ids` llevaba `readonly="1"` fijo en `views/poliza_views.xml`, que Odoo
+propaga al formulario embebido completo (`view_recibo_form`), pisando la lógica de
+readonly por estado que ese form ya tenía por campo (`fecha_pago`/`conducto_id`
+editables solo mientras `estado='pendiente'`).
+
+- Se quita el `readonly="1"` fijo de `recibo_ids`.
+- Se agregan `create="0"`/`delete="0"` a la sub-vista `<list>` de esa pestaña, para que
+  no se puedan dar de alta/baja recibos sueltos desde ahí (se generan por el plan de
+  pagos de la póliza) — el diálogo queda editable solo en lo que el form de recibo ya
+  permite según su estado, igual que cuando se abre desde el menú "Recibos".
+- No se tocó Python ni el modelo: `action_registrar_pago_ui`/`action_registrar_pago`
+  (`models/recibo.py`) ya funcionaban correctamente, solo estaban bloqueados por la vista.
+- **Bump** `19.0.1.8.3` → **`19.0.1.8.4`**. No requiere migración (cambio de vista, no de
+  datos ni esquema).
+
+### Archivos
+- Modificados: `views/poliza_views.xml` (recibo_ids sin readonly fijo + create/delete=0
+  en la lista), `tests/test_views_xml.py` (test nuevo de regresión), `__manifest__.py`,
+  `Specs/Bugs.md`.
+
+### Tests
+- Test nuevo `test_bug013_recibo_ids_editable_sin_crear_ni_borrar` en
+  `test_views_xml.py`: verifica que `recibo_ids` no tenga `readonly="1"` fijo y que su
+  `<list>` tenga `create="0"`/`delete="0"`.
+- Pendiente de confirmar 0 failures/0 errors en sandbox tras el cambio.
+
+---
+
+## Sesión 2026-07-15 — Reclutamiento: gate mínimo y scope reducido para Puesto Interno (D-24) · `19.0.1.8.3`
+
+### Qué se hizo
+Se resuelven **BUG-020** y **BUG-021**, ambos sobre D-20/D-23 (Puesto Interno = embudo
+100% nativo de Odoo, sin gates ni conversión BCA):
+
+- **BUG-020:** "Puesto Interno" podía llegar a la etapa hired nativa ("Contract Signed")
+  solo con el nombre del candidato. Se agrega el `@api.constrains`
+  `_check_habilitacion_datos_puesto_interno` (`hr_applicant.py`), exclusivo de
+  `job_interno`, que exige RFC + CURP + correo antes de cualquier etapa
+  `hired_stage=True`. No modifica `_check_habilitacion_datos` (sigue exclusivo de
+  Agentes/Promotorías).
+- **BUG-021:** las 4 etapas nativas intermedias de `hr_recruitment` ("Nuevo"/
+  "Calificación"/"Primera Entrevista"/"Segunda Entrevista", `job_ids` vacío = globales)
+  contaminaban los kanbans de los 3 puestos BCA, y "Puesto Interno" no compartía
+  ninguna etapa BCA. Se amplía el `job_ids` de **Recibido…Cena** (4 etapas) para
+  incluir `job_interno` (XML + migración `19.0.1.8.3` para BDs existentes,
+  `noupdate="1"`) — "Evaluación PDA"/"Acuerdo de Arranque" quedan explícitamente
+  excluidas a pedido del cliente (esas fases no aplican a un puesto interno). Las 4
+  etapas nativas intermedias se **borran** (`DELETE`, mismo patrón que la retirada de
+  `stage_alta_interna` en 19.0.1.7.7), reasignando primero cualquier candidato
+  existente en ellas a "Recibido". Puesto Interno sigue cerrando en "Contract Signed"
+  sin lógica BCA de conversión (Fase B y `_bca_procesar_transicion_etapa` sin cambios).
+  - Primer intento descartado: restringir `job_ids` a un puesto placeholder (en vez de
+    borrar), porque `hr.recruitment.stage` no tiene campo `active` en Odoo 19. Se
+    abandonó tras confirmar que Odoo oculta por defecto los Many2many hacia registros
+    archivados (el placeholder tendría que quedar activo y seleccionable) y que el
+    cliente prefería borrar directamente.
+- Revisión parcial de D-20/D-23 documentada como **D-24**.
+- **Bump** `19.0.1.8.2` → **`19.0.1.8.3`**.
+
+### Archivos
+- Modificados: `models/hr_applicant.py` (nuevo constrain + helper),
+  `data/hr_recruitment_stages.xml` (job_ids de Recibido…Cena + comentario),
+  `data/hr_jobs.xml` (descripción de `job_interno`), `tests/test_hr_applicant.py`
+  (`test_embudo_13_etapas_cargadas` dividido en "sí Puesto Interno"/"no Puesto
+  Interno" + tests nuevos BUG-020/BUG-021; `test_puesto_interno_no_crea_partner_ni_puente`
+  actualizado con RFC/CURP para satisfacer el gate nuevo), `__manifest__.py`,
+  `Specs/Bugs.md`, `Specs/Decisiones.md`.
+- Nuevos: `migrations/19.0.1.8.3/pre-migration.py`.
+
+### Tests
+- Suite `test_hr_applicant.py` (tag `BCA_Seguros`) actualizada con 3 tests nuevos de
+  BUG-020 y 2 de BUG-021; `test_embudo_13_etapas_cargadas` ajustado a la nueva
+  segmentación; `test_puesto_interno_no_crea_partner_ni_puente` actualizado con
+  RFC/CURP para satisfacer el gate nuevo.
+- El script `migrations/19.0.1.8.3/pre-migration.py` se verificó ejecutándolo
+  directamente vía `odoo shell` contra un estado simulado "pre-migración" (etapa
+  nativa con candidato asignado + `job_interno` removido de Recibido…Cena): tras
+  `migrate()`, `job_interno` volvió a esas 4 etapas, las etapas nativas se borraron y
+  el candidato se reasignó a "Recibido" — verificado dentro de una transacción con
+  rollback, sin dejar cambios persistentes.
+- Verificado en sandbox Docker (`test_bca_bug020021f`): **0 failures, 0 errors,
+  195 tests**, con el diseño final (borrado en vez de placeholder, scope acotado a
+  Recibido…Cena).
+- `santitest` (dev, ya había recibido una versión intermedia de `19.0.1.8.3` con el
+  diseño de placeholder, descartado) se corrigió con un script puntual: se retiró
+  `job_interno` de "Evaluación PDA"/"Acuerdo de Arranque", se borraron las 4 etapas
+  nativas (antes ligadas al placeholder) y se borró el puesto placeholder
+  `job_placeholder_scope_nativo` (ya sin uso).
+
+---
+
 ## Sesión 2026-07-09 — Cobranza/Pólizas: carga de beneficiarios por hoja separada (B05) · `19.0.1.7.9`
 
 ### Qué se hizo

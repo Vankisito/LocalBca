@@ -314,15 +314,43 @@ class TestHrApplicant(TransactionCase):
         """BUG-002: el job real "Puesto Interno" tampoco crea partner ni puente.
 
         Regresión directa sobre el bug reportado (antes no existía este `hr.job`);
-        mismo comportamiento que cualquier job no comercial (D-20).
+        mismo comportamiento que cualquier job no comercial (D-20). Provee
+        RFC/CURP para satisfacer el gate mínimo de datos de BUG-020/D-24 (el
+        candidato debe poder llegar al hired nativo antes de verificar que no
+        se crea partner/puente).
         """
         antes = self.env['res.partner.agente.aseguradora'].search_count([])
-        applicant = self._crear_applicant(self.job_interno)
+        applicant = self._crear_applicant(
+            self.job_interno, bca_rfc=_RFC_VALIDO, bca_curp=_CURP_VALIDO)
         applicant.stage_id = self.stage_hired
         if applicant.partner_id:
             self.assertNotEqual(applicant.partner_id.bca_tipo, 'agente')
         despues = self.env['res.partner.agente.aseguradora'].search_count([])
         self.assertEqual(antes, despues, 'Puesto Interno no debe crear puentes.')
+
+    # ---------------------------------------------------------------
+    # BUG-020 — Gate mínimo de datos para Puesto Interno antes del hired (D-24)
+    # ---------------------------------------------------------------
+    def test_bug020_puesto_interno_sin_datos_bloquea_hired(self) -> None:
+        """job_interno sin RFC/CURP/email_from no llega a la etapa hired."""
+        applicant = self._crear_applicant(self.job_interno, email_from=False)
+        with self.assertRaises(ValidationError):
+            applicant.stage_id = self.stage_hired
+
+    def test_bug020_puesto_interno_con_datos_completos_avanza(self) -> None:
+        """Con RFC+CURP+email_from, job_interno sí llega al hired nativo."""
+        applicant = self._crear_applicant(
+            self.job_interno, bca_rfc=_RFC_VALIDO, bca_curp=_CURP_VALIDO,
+        )
+        applicant.stage_id = self.stage_hired  # no debe lanzar
+        self.assertEqual(applicant.stage_id, self.stage_hired)
+
+    def test_bug020_no_afecta_gate_existente_de_figuras_comerciales(self) -> None:
+        """El gate nuevo de job_interno no reemplaza a `_check_habilitacion_datos`."""
+        applicant = self._crear_applicant(
+            self.job_reclutamiento, bca_rfc=_RFC_VALIDO, bca_curp=_CURP_VALIDO)
+        with self.assertRaises(ValidationError):
+            applicant.stage_id = self.stage_cedula  # faltan clave_arranque/aseguradora/fecha
 
     # ---------------------------------------------------------------
     # Fase 3 — Clave Definitiva: creación del empleado (#8/#9)
@@ -390,18 +418,36 @@ class TestHrApplicant(TransactionCase):
     # Etapa 12 Fase A — cimientos (HU-1.0/1.1/1.2)
     # ---------------------------------------------------------------
     def test_embudo_13_etapas_cargadas(self) -> None:
-        """Las 13 etapas comerciales cargan scopeadas a AMBOS jobs comerciales."""
+        """Las 13 etapas comerciales cargan scopeadas a los jobs esperados.
+
+        Recibido…Cena (seq 1-4) incluye también `job_interno` desde D-24
+        (BUG-020/BUG-021); "Evaluación PDA"/"Acuerdo de Arranque" (seq 5-6) y
+        Fase B (seq 7-13) siguen exclusivas de las figuras comerciales (esas
+        fases no aplican a un puesto interno).
+        """
         job_recl = self.job_reclutamiento
         job_capt = self.job_captacion
-        xmlids_seq = [
+        puesto_interno_si = [
             ('stage_recibido', 1), ('stage_prospeccion', 2), ('stage_cafe', 3),
-            ('stage_entrevista', 4), ('stage_evaluacion_pda', 5),
-            ('stage_acuerdo_arranque', 6), ('stage_clave_arranque', 7),
-            ('stage_inscripcion_cia', 8), ('stage_curso_cedula', 9),
-            ('stage_examen', 10), ('stage_cedula_emitida', 11),
-            ('stage_en_desarrollo', 12), ('stage_clave_definitiva', 13),
+            ('stage_entrevista', 4),
         ]
-        for xmlid, seq in xmlids_seq:
+        puesto_interno_no = [
+            ('stage_evaluacion_pda', 5), ('stage_acuerdo_arranque', 6),
+            ('stage_clave_arranque', 7), ('stage_inscripcion_cia', 8),
+            ('stage_curso_cedula', 9), ('stage_examen', 10),
+            ('stage_cedula_emitida', 11), ('stage_en_desarrollo', 12),
+            ('stage_clave_definitiva', 13),
+        ]
+        for xmlid, seq in puesto_interno_si:
+            stage = self.env.ref(f'BCA_Seguros.{xmlid}')
+            self.assertEqual(stage.sequence, seq, f'{xmlid} sequence != {seq}')
+            self.assertIn(job_recl, stage.job_ids,
+                          f'{xmlid} debe estar scopeada a job_reclutamiento_agente.')
+            self.assertIn(job_capt, stage.job_ids,
+                          f'{xmlid} debe estar scopeada a job_captacion_promotoria.')
+            self.assertIn(self.job_interno, stage.job_ids,
+                          f'{xmlid} SÍ debe estar scopeada a job_interno (D-24).')
+        for xmlid, seq in puesto_interno_no:
             stage = self.env.ref(f'BCA_Seguros.{xmlid}')
             self.assertEqual(stage.sequence, seq, f'{xmlid} sequence != {seq}')
             self.assertIn(job_recl, stage.job_ids,
@@ -409,7 +455,65 @@ class TestHrApplicant(TransactionCase):
             self.assertIn(job_capt, stage.job_ids,
                           f'{xmlid} debe estar scopeada a job_captacion_promotoria.')
             self.assertNotIn(self.job_interno, stage.job_ids,
-                              f'{xmlid} NO debe estar scopeada a job_interno (BUG-002/D-20).')
+                              f'{xmlid} NO debe estar scopeada a job_interno (D-24).')
+
+    def test_bug021_puesto_interno_ve_recibido_a_cena(self) -> None:
+        """job_interno queda scopeado solo a Recibido…Cena (D-24), no a
+        "Evaluación PDA"/"Acuerdo de Arranque" (exclusivas de las figuras
+        comerciales)."""
+        si_xmlids = [
+            'stage_recibido', 'stage_prospeccion', 'stage_cafe', 'stage_entrevista',
+        ]
+        for xmlid in si_xmlids:
+            stage = self.env.ref(f'BCA_Seguros.{xmlid}')
+            self.assertIn(self.job_interno, stage.job_ids)
+        self.assertNotIn(
+            self.job_interno,
+            self.env.ref('BCA_Seguros.stage_evaluacion_pda').job_ids)
+        self.assertNotIn(
+            self.job_interno, self.stage_acuerdo.job_ids)
+
+    def test_bug021_criterio_borrado_etapas_nativas(self) -> None:
+        """Reproduce el criterio de `migrations/19.0.1.8.3` para identificar
+        las etapas nativas intermedias a borrar: NO son de BCA_Seguros,
+        `hired_stage=False`, nombre en la lista candidata ES/EN. Una etapa BCA
+        (aunque comparta nombre por coincidencia) o una etapa hired no deben
+        matchear. `hr.recruitment.stage` no tiene campo `active` en Odoo 19
+        (BUG-021): se retiran con `unlink()`, no con `active=False`.
+        """
+        Stage = self.env['hr.recruitment.stage']
+        nativa = Stage.create({'name': 'Nuevo', 'sequence': 1})
+        nativa_en = Stage.create({'name': 'First Interview', 'sequence': 2})
+        hired_no_matchea = Stage.create({
+            'name': 'Nuevo', 'sequence': 3, 'hired_stage': True,
+        })
+        nativa_id, nativa_en_id = nativa.id, nativa_en.id
+
+        candidatas_es_en = [
+            'Nuevo', 'New', 'Calificación', 'Calificacion', 'Qualified',
+            'Qualification', 'Primera Entrevista', 'First Interview',
+            'Segunda Entrevista', 'Second Interview',
+        ]
+        stages_bca = self.env['hr.recruitment.stage'].browse([
+            self.stage_recibido.id, self.stage_acuerdo.id,
+            self.stage_cedula.id, self.stage_definitiva.id,
+        ])
+        candidatas = Stage.search([
+            ('hired_stage', '=', False),
+            ('name', 'in', candidatas_es_en),
+        ]) - stages_bca
+
+        self.assertIn(nativa, candidatas)
+        self.assertIn(nativa_en, candidatas)
+        self.assertNotIn(hired_no_matchea, candidatas,
+                          'Una etapa hired no debe borrarse aunque coincida el nombre.')
+        self.assertNotIn(self.stage_recibido, candidatas,
+                          'Una etapa BCA no debe borrarse (nombre no coincide).')
+
+        # Simula el borrado real (unlink), nunca active=False.
+        candidatas.unlink()
+        self.assertFalse(Stage.browse(nativa_id).exists())
+        self.assertFalse(Stage.browse(nativa_en_id).exists())
 
     def test_etapa_entrevista_renombrada_cena(self) -> None:
         """La etapa "Entrevista" ahora se llama "Cena" (terminología del equipo)."""

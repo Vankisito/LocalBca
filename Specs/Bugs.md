@@ -30,7 +30,6 @@ obvios, añadir un bloque en *Detalle de bugs abiertos*. Al resolverlo, moverlo 
 | ID | Fecha | Vista / Origen | Descripción | Tipo | Prioridad | Estado |
 |----|-------|----------------|-------------|------|-----------|--------|
 | BUG-012 | 2026-05-27 | Recibo (form), Póliza (pestaña Recibos), Contactos | Las fechas (Cobertura Desde/Hasta, Fecha de Pago) no se muestran en formato día/mes/año. | Config | ⚪ Baja | Pendiente-config |
-| BUG-013 | 2026-05-27 | Póliza → form → pestaña "Recibos" | Al abrir un recibo desde la pestaña se muestra un popup con botón "Registrar Pago", pero la sección "Datos del Pago" no es editable en ese diálogo, por lo que el botón no tiene funcionalidad real. | UI/UX | 🟡 Media | Abierto |
 | BUG-015 | 2026-06-05 | Datos: `bca.poliza.coaseguro` vs `bca.factor.pca.coaseguro_min` | Desajuste de unidades de coaseguro: la póliza lo guarda como fracción (`0.10`=10%) y el seed de factores GMM como puntos porcentuales (`coaseguro_min=10.0`). El calculador de PCA (E7) lo normaliza, pero la inconsistencia de esquema persiste y puede confundir captura/reportes. | Datos | 🟡 Media | Abierto |
 
 ### Detalle de bugs abiertos (cont.)
@@ -46,15 +45,28 @@ obvios, añadir un bloque en *Detalle de bugs abiertos*. Al resolverlo, moverlo 
 - *Causa:* Odoo renderiza los campos `Date` según el `date_format` del idioma activo; no existe override por campo en la vista.
 - *Solución propuesta (configuración, no código):* Ajustes → Traducciones → Idiomas → Español (México) con `date_format = %d/%m/%Y`, y asignar ese idioma a los usuarios/empresa. Afecta a todas las fechas del sistema (deseable para despliegue MX).
 
-**BUG-013 — "Registrar Pago" inutilizable desde la pestaña Recibos de la póliza**
-- *Pasos para reproducir:* Póliza activa → pestaña "Recibos" → clic en una fila de recibo → se abre el form del recibo en diálogo.
-- *Comportamiento actual:* El diálogo se abre en modo solo lectura (la pestaña declara el one2many `recibo_ids` como `readonly="1"`), por lo que "Datos del Pago" (fecha_pago, conducto) no se puede completar y "Registrar Pago" falla o no hace nada útil.
-- *Comportamiento esperado:* O bien no mostrar "Registrar Pago" en ese contexto, o abrir el recibo en su formulario editable para poder cobrarlo.
-- *Soluciones candidatas (a evaluar):* (a) ocultar el botón cuando el form se abre embebido/diálogo vía un flag de contexto; (b) que el clic en la fila navegue al form completo editable del recibo (no diálogo); (c) registrar el pago siempre desde el menú **Recibos** (workaround actual).
-
 ---
 
 ## Bugs Resueltos
+
+Resuelto el **2026-07-15** (Cobranza/Pólizas; bump de manifest `19.0.1.8.3` →
+`19.0.1.8.4`):
+
+| ID | Vista / Origen | Descripción | Tipo | Prioridad | Solución | Commit |
+|----|----------------|-------------|------|-----------|----------|--------|
+| BUG-013 | Póliza → form → pestaña "Recibos" | Al abrir un recibo desde la pestaña se mostraba un popup con botón "Registrar Pago", pero la sección "Datos del Pago" no era editable en ese diálogo (el one2many `recibo_ids` llevaba `readonly="1"` fijo, propagado al form embebido), por lo que el botón no tenía funcionalidad real. | UI/UX | 🟡 Media | Se quita el `readonly="1"` fijo de `recibo_ids` en `views/poliza_views.xml`: el diálogo embebido ahora respeta la lógica de readonly por estado que ya tenía `view_recibo_form` (fecha_pago/conducto_id editables mientras `estado='pendiente'`). Se agregan `create="0"`/`delete="0"` a la sub-lista para que la pestaña siga sin permitir alta/baja de recibos sueltos. Test de regresión nuevo en `test_views_xml.py`. | commit pendiente |
+
+---
+
+Resuelto el **2026-07-15** (Etapa 12 Reclutamiento; bump de manifest `19.0.1.8.2` →
+`19.0.1.8.3`; suite `test_hr_applicant.py` actualizada con casos nuevos):
+
+| ID | Vista / Origen | Descripción | Tipo | Prioridad | Solución | Commit |
+|----|----------------|-------------|------|-----------|----------|--------|
+| BUG-020 | Reclutamiento → Puesto Interno (`hr.applicant`) | "Puesto Interno" podía llegar a la etapa hired nativa ("Contract Signed") solo con el nombre del candidato, sin RFC, CURP ni correo — sin ningún gate mínimo de datos, a diferencia de las figuras comerciales. | Lógica | 🟠 Alta | Nuevo `@api.constrains` `_check_habilitacion_datos_puesto_interno` en `hr_applicant.py`, exclusivo de `job_interno`, que bloquea el avance a cualquier etapa con `hired_stage=True` sin `bca_rfc`/`bca_curp`/`email_from`. No modifica `_check_habilitacion_datos` (sigue exclusivo de las figuras comerciales). Ver **D-24**. | commit pendiente |
+| BUG-021 | Reclutamiento → Kanban Agentes/Promotores/Puesto Interno (`hr.recruitment.stage`) | "Puesto Interno" no compartía ninguna etapa BCA y las 4 etapas nativas intermedias de `hr_recruitment` ("Nuevo"/"Calificación"/"Primera Entrevista"/"Segunda Entrevista", `job_ids` vacío = "globales") aparecían contaminando los kanbans de los 3 puestos BCA. | Datos/Lógica | 🟠 Alta | Se amplía el `job_ids` de Recibido…Cena (4 etapas) para incluir `job_interno` (XML + migración `19.0.1.8.3` para BDs existentes) — "Evaluación PDA"/"Acuerdo de Arranque" quedan excluidas a pedido del cliente (esas fases no aplican a un puesto interno). Las 4 etapas nativas intermedias se **borran** vía script de migración (mismo patrón que la retirada de `stage_alta_interna` en 19.0.1.7.7), reasignando candidatos existentes a "Recibido" primero. `job_interno` sigue cerrando en la etapa nativa hired ("Contract Signed") sin lógica BCA de conversión. Revisión parcial de D-20/D-23, ver **D-24**. | commit pendiente |
+
+---
 
 Resuelto el **2026-07-14** (Etapa 12 Reclutamiento; bump de manifest `19.0.1.8.0` →
 `19.0.1.8.2`; suite `test_hr_applicant.py` verificada en sandbox tras cada fix: 0 failures,

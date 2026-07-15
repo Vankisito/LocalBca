@@ -1,27 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- ================================================================
-         Embudo de reclutamiento de FIGURAS COMERCIALES (D-20). Aplica por igual
-         a Agentes (job_reclutamiento_agente) y Promotorías (job_captacion_promotoria):
-         ambos recorren el mismo embudo de 12 etapas (Fase A + Fase B).
+         Embudo de reclutamiento de FIGURAS COMERCIALES (D-20) + Fase A
+         (parcial) de Puesto Interno (D-24). Fase A completa (seq 1-6) es de
+         Agentes (job_reclutamiento_agente) y Promotorías
+         (job_captacion_promotoria). Puesto Interno (job_interno) SOLO
+         comparte Recibido…Cena (seq 1-4): "Evaluación PDA" (seq 5) y
+         "Acuerdo de Arranque" (seq 6) son exclusivas de las figuras
+         comerciales (esas fases no aplican a un puesto interno). Fase B
+         (seq 7-13) sigue exclusiva de las dos figuras comerciales.
 
          Etapas como DATOS DEL MÓDULO para reproducibilidad en CI/sandbox
          (evita el drift D-13). Se referencian por env.ref y se comparan por
          `sequence`, NUNCA por ID hardcodeado.
 
-         Las 13 etapas llevan job_ids → [job_reclutamiento_agente, job_captacion_promotoria]
-         para NO aparecer en puestos internos. La conversión se dispara por CRUCE de
-         umbral de `sequence` (hr_applicant._bca_procesar_transicion_etapa), en 3 fases:
+         La conversión se dispara por CRUCE de umbral de `sequence`
+         (hr_applicant._bca_procesar_transicion_etapa), en 3 fases, y sigue
+         ignorando `job_interno` sin cambios (D-20):
            - "Acuerdo de Arranque" (seq 6): traspaso Reclutamiento→Capital Humano +
              creación del contacto res.partner (agente/promotoría según el job).
            - "Cédula Emitida" (seq 11, hired_stage=True): asienta la clave por aseguradora.
            - "Clave Definitiva" (seq 13): crea el hr.employee del agente.
          "En Desarrollo Comercial" (seq 12) es post-habilitación.
 
-         Los PUESTOS INTERNOS (Auxiliar admin., Reclutador, Gerencial, cualquier otro
-         hr.job) usan el embudo NATIVO de Odoo y cierran con su etapa hired nativa
-         ("Contract Signed"). Ya no existe una etapa BCA "Contratado (Alta Interna)"
-         (retirada en 19.0.1.7.7; ver migrations/19.0.1.7.7).
+         PUESTO INTERNO (Auxiliar admin., Reclutador, Gerencial, etc.): desde
+         D-24 recorre Recibido…Cena (seq 1-4), pero cierra con la etapa hired
+         NATIVA de Odoo ("Contract Signed"), sin entrar a "Evaluación PDA"/
+         "Acuerdo de Arranque"/Fase B ni disparar ninguna lógica BCA de
+         conversión (el despachador ya lo excluye por job_id). Un gate nuevo
+         (`_check_habilitacion_datos_puesto_interno`, BUG-020) exige RFC+CURP+
+         correo antes de ese hired nativo. Las 4 etapas nativas intermedias
+         de `hr_recruitment` que antes contaminaban los 3 kanbans se BORRAN
+         vía migrations/19.0.1.8.3 (BUG-021), reasignando primero cualquier
+         candidato existente en ellas a "Recibido" — mismo patrón que la
+         retirada de `stage_alta_interna` en 19.0.1.7.7. Ya no existe una
+         etapa BCA "Contratado (Alta Interna)" (retirada en 19.0.1.7.7; ver
+         migrations/19.0.1.7.7).
          noupdate="1": no clobberar reordenamientos del cliente.
          ================================================================ -->
     <data noupdate="1">
@@ -29,25 +43,25 @@
         <record id="stage_recibido" model="hr.recruitment.stage">
             <field name="name">Recibido</field>
             <field name="sequence">1</field>
-            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria'), ref('BCA_Seguros.job_interno')])]"/>
         </record>
 
         <record id="stage_prospeccion" model="hr.recruitment.stage">
             <field name="name">Prospección</field>
             <field name="sequence">2</field>
-            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria'), ref('BCA_Seguros.job_interno')])]"/>
         </record>
 
         <record id="stage_cafe" model="hr.recruitment.stage">
             <field name="name">Café</field>
             <field name="sequence">3</field>
-            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria'), ref('BCA_Seguros.job_interno')])]"/>
         </record>
 
         <record id="stage_entrevista" model="hr.recruitment.stage">
             <field name="name">Cena</field>
             <field name="sequence">4</field>
-            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria')])]"/>
+            <field name="job_ids" eval="[(6, 0, [ref('BCA_Seguros.job_reclutamiento_agente'), ref('BCA_Seguros.job_captacion_promotoria'), ref('BCA_Seguros.job_interno')])]"/>
         </record>
 
         <record id="stage_evaluacion_pda" model="hr.recruitment.stage">

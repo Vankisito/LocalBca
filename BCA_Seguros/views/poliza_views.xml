@@ -233,8 +233,16 @@
                             </group>
                         </page>
                         <page name="recibos" string="Recibos">
-                            <field name="recibo_ids" readonly="1">
-                                <list>
+                            <!-- Sin readonly="1" fijo (BUG-013): el diálogo que se
+                                 abre al hacer clic en una fila debe respetar la
+                                 lógica de readonly por estado que ya tiene
+                                 view_recibo_form (fecha_pago/conducto_id editables
+                                 mientras estado='pendiente'), para que "Registrar
+                                 Pago" funcione. create="0"/delete="0" en la lista
+                                 evita que se puedan alta/baja recibos sueltos desde
+                                 esta pestaña (se generan por el plan de pagos). -->
+                            <field name="recibo_ids">
+                                <list create="0" delete="0">
                                     <field name="numero_recibo"/>
                                     <field name="fecha_desde"/>
                                     <field name="fecha_hasta"/>
