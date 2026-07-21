@@ -307,6 +307,17 @@ class ResPartner(models.Model):
             'domain': domain,
         }
 
+    @api.model
+    def _synced_commercial_fields(self) -> list:
+        # BCA reutiliza parent_id para la jerarquía organizacional (Holding >
+        # Promotoría > Agente), no para relaciones de subsidiaria legal como
+        # asume el core. El RFC (vat) es personal por agente: si se deja en
+        # la lista de "commercial fields", Odoo lo sincroniza automáticamente
+        # hacia arriba y hacia abajo en la jerarquía (via _fields_sync /
+        # _load_records_create), haciendo que todos los agentes de una misma
+        # promotoría/holding terminen con el RFC del primero que se procese.
+        return [f for f in super()._synced_commercial_fields() if f != 'vat']
+
     @api.constrains('bca_tipo', 'parent_id')
     def _check_jerarquia(self) -> None:
         """Valida que la jerarquía organizacional sea coherente:

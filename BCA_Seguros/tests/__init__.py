@@ -15,4 +15,5 @@ from . import (
     test_carga_portafolio,
     test_reportes,
     test_dashboard,
+    test_res_partner,
 )
