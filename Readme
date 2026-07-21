@@ -57,6 +57,4 @@ Puedes probar el modulo instalandolo en la base de datos [Sandbox_bca1] de [Odoo
 Para conocer el estado actual de la implementación, etapas completadas y siguientes pasos, consultar changelog.md
 Para conocer las decisiones técnicas y de diseño tomadas hasta ahora, consultar Decisiones.md
 Para entender qué hace el módulo en detalle funcional, consultar specs/.
-Este README solo te dice dónde estás parado. El resto vive donde debe vivir.# test CI/CD
-
-
+Este README solo te dice dónde estás parado. El resto vive donde debe vivir.
