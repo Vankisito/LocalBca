@@ -6,12 +6,13 @@
 
 ## D-01 — Nombre técnico del módulo: `BCA_Seguros`
 
-**Fecha:** 2026-05-26  
+**Fecha:** 2026-05-26
 **Decidido por:** Rafael Viera (usuario)
 
 **Decisión:** El nombre técnico del módulo (nombre de carpeta que Odoo usa como identificador interno) es `BCA_Seguros`.
 
 **Consecuencias:**
+
 - Todos los XML external IDs usan prefijo `BCA_Seguros.` (ej: `BCA_Seguros.group_bca_agente`)
 - Todos los `ref=` en XML usan `BCA_Seguros.algo`
 - Los atributos `groups=` en vistas usan `groups="BCA_Seguros.group_bca_..."`
@@ -24,12 +25,13 @@
 
 ## D-02 — Agentes son usuarios internos de Odoo (no portal)
 
-**Fecha:** Sesión previa (antes de 2026-05-26)  
+**Fecha:** Sesión previa (antes de 2026-05-26)
 **Referencia:** `Plan de Desarrollo.md §2.0`
 
 **Decisión:** Los agentes inician sesión en el **backend** de Odoo (`share=False`). No son usuarios portal.
 
 **Consecuencias:**
+
 - No existe `/my/polizas` ni ninguna ruta portal
 - El módulo `portal` no es dependencia de `BCA_Seguros`
 - El grupo se llama `group_bca_agente` (no `group_bca_agente_portal`)
@@ -39,7 +41,7 @@
 
 ## D-03 — `promotoria_id` en póliza es computed puro (sin `store=True`)
 
-**Fecha:** Sesión previa  
+**Fecha:** Sesión previa
 **Referencia:** Corrección C2 en `Arquitectura_BCA_Seguros.md §13`
 
 **Decisión:** `promotoria_id` en `bca.poliza` es un campo computed sin almacenamiento. Se implementa `_search_promotoria_id()` para mantener filtrabilidad.
@@ -67,6 +69,7 @@
 **Decisión:** Modelo `bca.poliza.beneficiario` (One2many en la póliza) con `beneficiario_id` → `res.partner`, `parentesco` (Selection) y `porcentaje` (Float). **NO** se fuerza un `bca_tipo` en el beneficiario. La suma de porcentajes debe ser 100%, validada **al confirmar** la póliza (`_validar_porcentaje_beneficiarios` desde `action_confirmar`), **no** como `@api.constrains`.
 
 **Razón:**
+
 - Ligarlo a `res.partner` permite reutilizar datos del contacto y, a futuro, CRM/dirección. Un beneficiario suele ser cónyuge/hijo que podría ser contratante en otra póliza → por eso NO se fuerza `bca_tipo` (incompatible con el valor único, ver D-04).
 - Validar al confirmar (y no en cada `write`) permite capturar la póliza en borrador con datos parciales sin que la constraint estorbe.
 
@@ -102,6 +105,7 @@ operativa la da `pagado_hasta`) se mantiene y se refuerza.
 - **Reclutamiento (`hr_recruitment`) es dueño del ciclo.** Vía automated actions sobre `hr.applicant`: crea el partner agente en Prospecto, crea el registro puente con `clave_arranque` al aprobar examen, y actualiza a `clave_definitiva` cuando la aseguradora confirma (la transición Arranque→Definitiva también la automatiza Reclutamiento). El contacto refleja el rollup + un **smart button** a `hr.applicant`; el detalle fino de exámenes/etapas vive en Reclutamiento.
 
 **Razón:**
+
 - El puente debe existir igual (claves múltiples + constraint SQL por aseguradora, ver C3). Guardar además un estado manual en el partner duplicaría la fuente → desync. Hacer el partner un rollup computed elimina el desync (misma filosofía que C2/D-03).
 - El estado es genuinamente por aseguradora, así que la PCA debe leerlo del puente; un campo global del partner no puede expresarlo correctamente.
 - Reclutamiento ya lleva la prospección/exámenes; automatizar la alimentación del puente evita que Operaciones de Seguros tenga que mover estados a mano.
@@ -123,6 +127,7 @@ operativa la da `pagado_hasta`) se mantiene y se refuerza.
 - **Exclusión "coberturas individuales de accidentes/invalidez": fuera de alcance E7.** No existe campo estructurado (solo el texto libre `coberturas_adicionales`); queda como ajuste manual futuro. E7 implementa solo las exclusiones con campo: aportación adicional y temporalidad < 10 (Vida); coaseguro ≤ 5% (GMM).
 
 **Razón:**
+
 - Conservar el factor por moneda mantiene la semántica económica (las pólizas USD sí valen menos PCA), y aun así el resultado queda homogéneo en MXN para reportes y liquidaciones consolidadas.
 - Pinear la PCA a su propia moneda (`pca_currency_id`) evita mostrar montos ambiguos cuando la póliza es USD.
 - La exclusión por coberturas individuales no es auto-evaluable desde texto libre; forzarla sería adivinar. Mejor dejarla explícita como pendiente que producir PCA incorrecta.
@@ -148,6 +153,7 @@ operativa la da `pagado_hasta`) se mantiene y se refuerza.
 - **Colisión de etiqueta:** la etiqueta de `estado='vencida'` se renombró a **"Expirada"** (la clave `vencida` no cambia → sin migración).
 
 **Razón:**
+
 - Un solo eje de verdad para el pago elimina el riesgo de desincronización que D-06 aceptaba como "informativo". El estatus nunca contradice a los recibos.
 - `estado` (lifecycle) y `estatus_pago` (pago) son ejes ortogonales legítimos; el problema era solo el solapamiento semántico y la doble fuente, no la existencia de ambos.
 - El `pagado_hasta_inicial` permite cargar pólizas en vigor sin inventar recibos históricos pagados (decisión del usuario en Etapa 8: generar solo recibos posteriores al corte).
@@ -184,6 +190,7 @@ operativa la da `pagado_hasta`) se mantiene y se refuerza.
 **Contexto:** Etapa 3.5 introduce la primera pantalla OWL del módulo (pantalla de inicio).
 
 **Decisión:** Patrón del tablero:
+
 - **Backend:** `models.AbstractModel` `bca.dashboard` con `get_dashboard_data()` (devuelve el contrato §6 ya calculado) y `action_open(key)` (devuelve el `act_window` filtrado por tarjeta). Solo lee/agrega vía `search_count`/`_read_group` (respetan record rules); nunca escribe. Por ser `AbstractModel` no requiere ACL.
 - **Frontend:** componente OWL en `static/src/dashboard/`, registrado en `registry.category("actions")` como `bca_dashboard`; consume los datos por RPC en `onWillStart`. Mini-gráficas con Chart.js empaquetado en Odoo 19 (sin dependencias externas).
 - **Navegación:** los clics llaman `action_open()` (método Python que retorna el action dict) — **cumple DEC-026**: nada de `type="action"` + `active_id` en contexto.
@@ -197,6 +204,7 @@ operativa la da `pagado_hasta`) se mantiene y se refuerza.
 **Contexto:** Etapa 11 (cierre de la suite). 3 tests (parsers Vida/GMM y wizard de cobranza) fallaban en sandbox con `marca='advertencia'` (conducto no-match). Hardcodeaban el literal `'AGENTE_DIRECTO'` / `env.ref(seed)` apuntando al conducto semilla `BCA_Seguros.conducto_metlife_agente_directo`. `ParserBase._resolver_conducto` busca por **`codigo_archivo` + `aseguradora_id` + `activo=True`**; el conducto semilla no es estable entre entornos (su `codigo_archivo` cambia por diseño y su aseguradora/`activo` pueden diferir en sandbox), así que el match se rompía y `recibo.conducto_id` quedaba vacío.
 
 **Decisión:** Ningún fixture debe depender del conducto semilla (ni por literal ni por `env.ref`). Cada fixture **crea su propio conducto** ligado a la aseguradora del test, con un `codigo_archivo` único, y alimenta ese código:
+
 ```python
 # setUpClass
 cls.conducto = cls.env['bca.conducto'].create({
@@ -207,6 +215,7 @@ cls.conducto = cls.env['bca.conducto'].create({
 # fila
 'conducto': self.conducto.codigo_archivo,
 ```
+
 Es el mismo patrón que ya usaban `test_pca_metlife`, `test_reportes`, `test_poliza_vida` y `test_poliza_gmm`. El caso negativo deliberado (`'CONDUCTO_INVENTADO'` en `test_metlife_vida_conducto_no_match_continua`) sí usa un literal a propósito y permanece.
 
 **Razón:** El match del parser depende de 3 condiciones (código + aseguradora + activo); sincronizar sólo el código contra el seed no basta porque la aseguradora o el flag pueden haber drifteado. Crear el conducto en el propio test garantiza las 3 condiciones de forma determinista, sin acoplarse a datos semilla mutables. No es regresión funcional. Ver `Specs/TESTS_COVERAGE.md §4`.
@@ -278,6 +287,7 @@ Es el mismo patrón que ya usaban `test_pca_metlife`, `test_reportes`, `test_pol
 **Contexto:** Las pestañas propias "Perfil" y "Origen" que se agregaron en Fase A a `hr.applicant` duplicaban campos nativos o del embudo. El arch nativo v19 tiene la pestaña **"Detalles"** (`application_details`) con Grado (`type_id`), Búsqueda de talentos (`source_id`/`medium_id`/`campaign_id`), Puesto y Paquete salarial.
 
 **Decisión:** Se eliminan ambas pestañas propias y **7 campos**:
+
 - Origen: `bca_evento` (→ `campaign_id` nativo), `bca_referido_por` (→ `source_id`), `bca_contactado`/`bca_entrevistado`/`bca_reagendaciones` (→ embudo de etapas + actividades nativas).
 - Perfil: `bca_perfil_academico` (→ `type_id`/Grado nativo), `bca_tiene_cedula_previa` (→ se infiere de la pestaña Habilitación: si tiene cédula, se captura ahí).
 
@@ -296,7 +306,6 @@ Se **conservan y reubican**: `bca_folio_cv` → pestaña Identificación; `bca_r
 
 **Razón:** Un solo embudo por tipo de puesto, más limpio y fiel al negocio: los internos no tienen Fase A/B ni cédula, así que no deben ver etapas comerciales; y las promotorías, que sí son figuras comerciales, deben compartir el mismo embudo que los agentes. Corrige el error documental (internos en Fase A) y el hueco de código (promotorías fuera del embudo). Bump `19.0.1.7.6` → **`19.0.1.7.7`**.
 
-
 ---
 
 ## D-21 — Flujo de conversión en 3 fases + traspaso a Capital Humano nativo
@@ -305,6 +314,7 @@ Se **conservan y reubican**: `bca_folio_cv` → pestaña Identificación; `bca_r
 **Contexto:** El QA del embudo pidió separar el proceso en dos frentes (Fase A: reclutamiento; Fase B: capital humano) y repartir la conversión, que hasta ahora ocurría toda de golpe al llegar a la etapa hired "Cédula Emitida" (contacto + clave + empleado en `_bca_crear_partner_desde_contratado()`). También pidió una etapa nueva "Clave Definitiva" y un traspaso de gestión a Capital Humano.
 
 **Decisión:** La conversión se dispara por **cruce de umbral de `sequence`** en el override `write()` (`_bca_procesar_transicion_etapa`, patrón D-13 "nunca por ID"), en 3 fases idempotentes:
+
 1. **Acuerdo de Arranque (seq 6):** crea el contacto `res.partner`. Para el agente exige **Promotoría destino + Sede + RFC + CURP** (identidad idempotente por RFC+CURP, D-15). Además hace el **traspaso Reclutamiento→Capital Humano** con campos **nativos** (sin modelo/campo de "equipo"): la reclutadora se preserva en `interviewer_ids` y `user_id` se reasigna al usuario del `ir.config_parameter` `bca_reclutamiento.capital_humano_user_id` (si no está configurado, solo se avisa en el chatter).
 2. **Cédula Emitida (seq 11, hired):** asienta la clave por aseguradora, **siempre** en `clave_arranque` (D-14). La compuerta L2 (5 datos) se mantiene.
 3. **Clave Definitiva (seq 13, nueva):** crea el `hr.employee` (exige `bca_clave_definitiva`). **NO** promueve el puente a `clave_definitiva` — eso sigue siendo un proceso interno posterior que sí computa PCA (SI-4). El botón nativo "Create Employee" se oculta hasta esta etapa (campo computado `bca_puede_crear_empleado`).
@@ -321,6 +331,7 @@ Se retira `bca_tipo_candidato` (duplicaba el origen nativo `source_id`; `DROP CO
 **Contexto:** BUG-001 (`Bugs_2026-06-10.md`) reportó que el puesto "Promotores" (`job_captacion_promotoria`) permitía avanzar hasta "Cédula Emitida" sin RFC ni CURP, mientras "Agentes" (`job_reclutamiento_agente`) sí lo exigía. La causa: `_check_habilitacion_datos` (L2) y la creación del contacto en "Acuerdo de Arranque" (`_bca_crear_partner_agente_basico` vs `_bca_crear_promotoria`) filtraban explícitamente solo por `job_reclutamiento_agente` — decisión de alcance deliberada en su momento (`spec-etapa-12-reclutamiento-bca-v1.md`: "Flujo de Captación de Promotoría... no se modifica en esta etapa"), que el propio SDD (`sdd-reclutamiento-habilitacion-agentes-bca-v1.md §11.2`) dejó como pregunta abierta.
 
 **Decisión:** Se extiende la exigencia de **RFC + CURP** a ambas figuras comerciales:
+
 - `_bca_crear_promotoria()` ahora exige RFC + CURP (igual que `_bca_crear_partner_agente_basico`) antes de crear el contacto en "Acuerdo de Arranque", y los persiste en el partner promotoría (`vat`/`bca_curp`). NO exige Promotoría destino ni Sede (son conceptos de Agente que no aplican a quien crea la promotoría).
 - `_check_habilitacion_datos` (L2) ahora aplica a ambos jobs comerciales. `_bca_datos_habilitacion_faltantes()` se parametriza por job: RFC+CURP para ambos; Clave de Arranque, Fecha de Cédula y Aseguradora **solo** para `job_reclutamiento_agente`.
 - **NO se extiende** la creación del puente `res.partner.agente.aseguradora` (Fase 2) a Promotores: sigue exclusiva de `job_reclutamiento_agente`. Es un concepto de licencia de agente ante una aseguradora que no aplica a la creación de una promotoría (empresa).
@@ -329,24 +340,13 @@ Se retira `bca_tipo_candidato` (duplicaba el origen nativo `source_id`; `DROP CO
 
 ---
 
-## D-23 — `hr.job` genérico "Puesto Interno"; BUG-002 era un gap de datos, no arquitectónico
+## D-23 — `vat` (RFC) se excluye de la sincronización comercial de `res.partner`
 
-**Fecha:** 2026-07-14
-**Contexto:** BUG-002 (`Bugs_2026-06-10.md`) reportó que no existía ningún `hr.job` de puesto interno (Auxiliar Administrativa, Reclutador, Gerencial), citando el **BDD v1.3/SDD v1.0** (carpeta de Drive del cliente, `Grupo BCA/02_PROY_Reclutamiento`, 26-jun-2026) y describiendo que el embudo debía bifurcarse con Fase A + una etapa terminal "Contratado (Alta Interna)" para esos puestos. Al revisar, esa carpeta de Drive resultó tener **versiones anteriores** a las vigentes en el repo (**BDD v1.5 / SDD v1.1**, 3-jul-2026): la decisión **D-20** ya había corregido ese modelo — los puestos internos **no** recorren Fase A y la etapa "Contratado (Alta Interna)" fue **retirada** por migración (`19.0.1.7.7`); en su lugar usan el **embudo nativo de Odoo completo** (New…Contract Signed) y cierran con su hired nativo. El código (`_bca_procesar_transicion_etapa`, `_check_pda_gate`, `_check_habilitacion_datos`) ya excluye correctamente cualquier `job_id` que no sea `job_reclutamiento_agente`/`job_captacion_promotoria` — validado genéricamente por `test_job_interno_nativo_no_crea_puente_ni_agente`/`test_job_ajeno_no_crea_partner` con un job ad-hoc de prueba. El único gap real era que **no existía ningún `hr.job` interno de verdad** con el que una reclutadora pudiera capturar candidatos a esos puestos.
+**Fecha:** 2026-07-21
+**Contexto:** BUG-022 (`Bugs.md`). El core de Odoo sincroniza ciertos campos "comerciales" (entre ellos `vat`) hacia arriba y hacia abajo en la jerarquía de `parent_id` (`_synced_commercial_fields` / `_fields_sync`), asumiendo que `parent_id` representa una relación de subsidiaria legal (razón social matriz-filial). BCA reutiliza `parent_id` para la jerarquía organizacional propia (Holding > Promotoría > Agente), no para subsidiarias legales, y el RFC es un dato personal por agente. El resultado era que, al crear o escribir un registro, el RFC del primer agente procesado se propagaba automáticamente al resto de la promotoría/holding.
 
-**Decisión:** Se agrega un **único `hr.job` genérico "Puesto Interno"** (`job_interno`, `data/hr_jobs.xml`), sin `job_ids` en ninguna de las 13 etapas comerciales (por lo que cae naturalmente en las etapas nativas de `hr_recruitment`). Se decidió **no** crear un `hr.job` por cada puesto real (Auxiliar Administrativa/Reclutador/Gerencial) — quedan agrupados bajo este job genérico; si el negocio necesita distinguirlos como puestos nativos separados más adelante, se crean directamente en Odoo sin tocar el módulo. **No se modificó ningún código Python** ni los puestos "Agentes"/"Promotores" existentes (fuera de alcance). Bump `19.0.1.8.1` → **`19.0.1.8.2`**.
+**Decisión:** Override de `_synced_commercial_fields()` en `res_partner.py` que retorna la lista del core **sin** `'vat'`.
 
-**Razón:** La arquitectura ya estaba resuelta por D-20 y probada; el fix necesario era puramente de datos. Un solo job genérico es la solución más simple que cierra el gap reportado (permite capturar candidatos internos) sin sobre-modelar puestos que el negocio no pidió diferenciar en el sistema. Deja constancia de que la carpeta de Drive del cliente puede quedar desactualizada respecto al repo — ante discrepancia, el repo (`Specs/02-reclutamiento/`) es la fuente vigente.
+**Razón:** Es la intervención mínima y específica al síntoma: preserva el resto de la sincronización comercial estándar de Odoo (útil para otros campos que sí tiene sentido heredar) y solo corta la propagación del RFC, que en el modelo de datos de BCA nunca debe compartirse entre contactos de una misma jerarquía. Bump `19.0.1.8.4` → **`19.0.1.8.5`**.
 
 ---
-
-## D-24 — Puesto Interno adopta la Fase A del embudo BCA; se archivan las 4 etapas nativas intermedias (revisión parcial de D-20/D-23)
-
-**Fecha:** 2026-07-15
-**Contexto:** BUG-020/BUG-021 detectaron dos gaps sobre la decisión D-20/D-23 (Puesto Interno = embudo 100% nativo de Odoo, sin gates ni conversión BCA): (1) la Fase A no tenía ningún gate mínimo de datos (RFC/CURP/correo) antes del hired nativo, dejando a "Puesto Interno" avanzar hasta "Contract Signed" solo con el nombre del candidato; (2) las 4 etapas nativas intermedias de `hr_recruitment` ("Nuevo"/"Calificación"/"Primera Entrevista"/"Segunda Entrevista", `job_ids` vacío por diseño nativo de Odoo = "etapa global") contaminaban los kanbans de los 3 puestos BCA (Agentes/Promotores/Puesto Interno), al no estar scopeadas a ningún job.
-
-**Decisión:** Se revisa PARCIALMENTE D-20/D-23 (no se anulan): "Puesto Interno" (`job_interno`) ahora **comparte solo Recibido…Cena** (4 etapas, seq 1-4) con Agentes y Promotorías —se agrega `job_interno` al `job_ids` de esas 4 etapas—, pero **NO** entra a "Evaluación PDA"/"Acuerdo de Arranque" (seq 5-6, confirmado con el cliente: esas fases no aplican a un puesto interno) ni a Fase B, y **mantiene el cierre en la etapa nativa hired** ("Contract Signed") **sin ninguna lógica BCA de conversión** (`_bca_procesar_transicion_etapa` sigue excluyendo `job_interno` sin cambios; no crea partner/puente/agente/empleado). Se agrega un gate mínimo nuevo (`_check_habilitacion_datos_puesto_interno`) exclusivo de `job_interno` que exige RFC+CURP+correo antes de cualquier etapa `hired_stage=True`. Las 4 etapas nativas intermedias de `hr_recruitment` se **borran** (`DELETE`, mismo patrón que la retirada de `stage_alta_interna` en 19.0.1.7.7) vía migración `19.0.1.8.3`, reasignando cualquier candidato existente en ellas a "Recibido" primero.
-
-Nota técnica (descartada tras probarla): se evaluó restringir `job_ids` de esas 4 etapas a un puesto placeholder en vez de borrarlas, porque `hr.recruitment.stage` no tiene campo `active` en Odoo 19 (verificado contra el código fuente del núcleo) y no se pueden archivar. Se descartó porque además Odoo oculta por defecto los Many2many hacia registros archivados (el placeholder tendría que quedar activo, un job real seleccionable) y el cliente prefirió borrar directamente antes que mantener un puesto técnico sin uso operativo dando vueltas en el sistema.
-
-**Razón:** El gap de datos (BUG-020) y la contaminación visual de los 3 kanbans (BUG-021) son defectos reales que D-20/D-23 no contemplaban al asumir el embudo nativo completo sin ningún tipo de estructura ni gate. Compartir solo Recibido…Cena (sin PDA/Acuerdo de Arranque, sin Fase B ni la conversión comercial) resuelve ambos síntomas sin reabrir la arquitectura de fondo: Puesto Interno sigue sin crear partner/puente/agente/empleado, solo gana estructura mínima y un gate de datos antes de su hired nativo. Borrar las etapas nativas (en vez de archivar, técnicamente no disponible, o mantener un placeholder) es más simple y sigue el mismo patrón ya usado en el módulo para retirar etapas obsoletas. Bump `19.0.1.8.2` → **`19.0.1.8.3`**.
