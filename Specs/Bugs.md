@@ -49,6 +49,14 @@ obvios, añadir un bloque en *Detalle de bugs abiertos*. Al resolverlo, moverlo 
 
 ## Bugs Resueltos
 
+Resuelto el **2026-07-21** (bump de manifest `19.0.1.8.4` → `19.0.1.8.5`):
+
+| ID | Vista / Origen | Descripción | Tipo | Prioridad | Solución | Commit |
+|----|----------------|-------------|------|-----------|----------|--------|
+| BUG-022 | Contactos → jerarquía Holding/Promotoría/Agente (`res.partner`) | El core de Odoo sincroniza `vat` hacia arriba/abajo en la jerarquía de `parent_id` (`_synced_commercial_fields`), asumiendo que `parent_id` representa una subsidiaria legal. BCA reutiliza `parent_id` para la jerarquía organizacional propia (Holding > Promotoría > Agente), no para subsidiarias legales, y el RFC es personal por agente: al crear/escribir registros, el RFC del primer agente procesado se propagaba al resto de la promotoría/holding. | Lógica | 🔴 Crítica | Override de `_synced_commercial_fields()` en `res_partner.py` que excluye `'vat'` de la lista de campos sincronizados por jerarquía. Test nuevo en `test_res_partner.py`. | `4a293f2` |
+
+---
+
 Resuelto el **2026-07-15** (Cobranza/Pólizas; bump de manifest `19.0.1.8.3` →
 `19.0.1.8.4`):
 
